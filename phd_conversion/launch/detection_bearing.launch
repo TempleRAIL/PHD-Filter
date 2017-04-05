@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<launch>
+  <arg name="ns" default="scarab40" />
+  <arg name="sensor_frame_id" default="scarab40/base"/>
+  <arg name="camera_info_topic" default="camera/rgb/camera_info"/>
+  <arg name="odom_topic" default="odom"/>
+  <arg name="detections_topic" default="object_detector/object_detections"/>
+  <arg name="measurements_topic" default="measurements"/>
+
+  <group ns="$(arg ns)">
+    <node name="detection_bearing_conv" pkg="phd_conversion" type="detection_bearing" output="screen">
+      <remap from="camera_info" to="$(arg camera_info_topic)"/>
+      <remap from="pose" to="$(arg odom_topic)"/>
+      <remap from="object_detections" to="$(arg detections_topic)"/>
+      <remap from="measurements" to="$(arg measurements_topic)"/>
+      <param name="sensor_frame_id" value="$(arg sensor_frame_id)"/>
+    </node>
+  </group>
+
+</launch>

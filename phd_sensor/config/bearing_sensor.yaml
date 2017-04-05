@@ -1,0 +1,17 @@
+bearing_max: deg(135.0)
+bearing_min: deg(-135.0)
+range_max: 15.00
+range_min: 0.20
+std_dev: deg(2.25)
+kappa: 0.5319
+clutter_bin_width: rad(0.2000 * pi)
+clutter_bin_weight: 0.2750
+skip_beams: 4
+target_diam: 0.0413
+intensity_threshold: 11000.0
+
+det_prob:
+  - {range: 0.00, prob: 0.8000}
+  - {range: 15.00, prob: 0.8000}
+
+map_service: "/static_map"

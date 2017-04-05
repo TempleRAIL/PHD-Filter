@@ -1,0 +1,153 @@
+<launch>
+
+	<arg name="sensor_frame_id" value="sensor" />
+	<arg name="base_frame_id" value="base" />
+  <arg name="odom_frame_id" value="odom" />
+  <arg name="global_frame_id" value="/map" />
+
+  <arg name="agent_prefix" value="scarab" />
+  <arg name="num_agents" value="1" />
+
+  <arg name="target_prefix" value="target" />
+	<arg name="num_targets" value="15" />
+
+  <arg name="sensor_config_file" value="$(find phd_sensor)/config/camera_sensor.yaml" />
+  <arg name="motion_model_file" value="$(find phd_filter)/config/grw_motion_model.yaml" />
+
+<!--
+	Bring up maps
+-->
+  <node name="map" pkg="map_server" type="map_server" output="screen"
+        args="$(find maps)/empty/empty.yaml" >
+    <param name="frame_id" value="$(arg global_frame_id)" />
+  </node>
+
+  <node name="map_nav" pkg="map_server" type="map_server" output="screen"
+        args="$(find phd_mi_controller)/launch/cdc/empty.yaml" >
+    <remap from="static_map" to="static_map_nav" />
+    <remap from="map" to="map_nav" />
+    <remap from="map_metadata" to="map_metadata_nav" />
+    <param name="frame_id" value="$(arg global_frame_id)" />
+  </node>
+
+<!--
+	Bring up agent simulator
+-->
+  <node name="KinematicSim" pkg="kinematic_sim" type="kinematic_sim"
+        output="screen" respawn="false">
+    <param name="publish_freq" value="7"/>
+    <param name="pub_global_frame" value="true"/>
+
+    <param name="base_frame_id" value="$(arg base_frame_id)"/>
+    <param name="odom_frame_id" value="$(arg odom_frame_id)"/>
+    <param name="global_frame_id" value="$(arg global_frame_id)"/>
+
+    <param name="noise_x_sd" value="0.0"/>
+    <param name="noise_y_sd" value="0.0"/>
+    <param name="noise_th_sd" value="0.0"/>
+
+    <param name="num_agents" value="$(arg num_agents)"/>
+    <param name="agent_prefix" value="$(arg agent_prefix)"/>
+
+    <param name="initial0" value="5.20 4.80 0.00"/>
+    <param name="initial1" value="1.20 5.30 0.00"/>
+    <param name="initial2" value="1.20 5.80 0.00"/>
+    <param name="initial3" value="1.20 6.30 0.00"/>
+    <param name="initial4" value="1.20 6.80 0.00"/>
+  </node>
+
+  <node name="PoseAggregator" pkg="laser_simulator" type="pose_aggregator"
+        output="screen" respawn="false" launch-prefix="">
+    <param name="publish_freq" value="7"/>
+
+    <param name="num_agents" value="$(arg num_agents)"/>
+    <param name="agent_prefix" value="$(arg agent_prefix)"/>
+    <param name="frame_id" value="$(arg base_frame_id)"/>
+    <param name="pose_topic" value="gt_pose"/>
+  </node>
+
+<!--
+	Bring up target simulator
+-->
+  <node name="TargetSim" pkg="phd_filter" type="motion_simulator_node"
+        output="screen" respawn="false">
+    <param name="publish_freq" value="1"/>
+    <param name="pub_global_frame" value="true"/>
+
+    <param name="num_agents" value="5"/>
+
+    <param name="base_frame_id" value="$(arg base_frame_id)"/>
+    <param name="odom_frame_id" value="$(arg odom_frame_id)"/>
+    <param name="global_frame_id" value="$(arg global_frame_id)"/>
+
+    <param name="num_agents" value="$(arg num_targets)"/>
+    <param name="agent_prefix" value="$(arg target_prefix)"/>
+
+    <rosparam file="$(find phd_filter)/launch/targets_empty.yaml" command="load" />
+    <rosparam file="$(arg motion_model_file)" command="load" />
+  </node>
+
+  <node name="TargetAggregator" pkg="laser_simulator" type="pose_aggregator"
+        output="screen" respawn="false">
+    <remap from="/pose_array" to="/target_array"/>
+
+    <param name="publish_freq" value="7"/>
+
+    <param name="num_agents" value="$(arg num_targets)"/>
+    <param name="agent_prefix" value="$(arg target_prefix)"/>
+    <param name="frame_id" value="$(arg base_frame_id)"/>
+    <param name="pose_topic" value="pose"/>
+  </node>
+
+<!--
+	Aggregate robot sensor measurements for PHD filter
+-->
+  <node name="SensorAggregator" pkg="range_sensor" type="camera_aggregator"
+        output="screen" respawn="false" launch-prefix="">
+    <param name="num_agents" value="$(arg num_agents)"/>
+    <param name="agent_prefix" value="$(arg agent_prefix)"/>
+  </node>
+
+<!--
+	Visualize sensor measurements
+-->
+  <node name="SensorVis" pkg="range_sensor" type="camera_vis"
+        output="screen" respawn="false">
+    <param name="frame_id" value="$(arg sensor_frame_id)"/>
+    <param name="agent_prefix" value="$(arg agent_prefix)"/>
+  </node>
+
+  <node name="phd_filter" pkg="phd_filter" type="phd_filter_camera_node"
+        output="screen" respawn="false" launch-prefix="">
+    <param name="num_targets" value="30.0" />
+    <param name="max_value" value="0.001" />
+    <param name="grid_res" value="0.10" />
+
+    <param name="width" value="10.0" />
+    <param name="height" value="10.0" />
+
+    <rosparam file="$(arg sensor_config_file)" ns="sensor" command="load" />
+    <rosparam file="$(arg motion_model_file)" ns="motion" command="load" />
+  </node>
+
+  <!--=============================== Team ================================-->
+  <group ns="scarab0">
+		<node name="$(anon transformer)" pkg="tf" type="static_transform_publisher"
+          args="0.0 0.0 0.0 0.0 0.0 3.14159 /scarab0/$(arg base_frame_id)
+                /scarab0/$(arg sensor_frame_id) 100" />
+
+    <node name="MeasurementSim" pkg="range_sensor" type="camera_sim"
+          output="screen" respawn="false" launch-prefix="" >
+      <remap from="target_array" to="/target_array"/>
+<!--
+      <remap from="measurements" to="measurements_raw"/>
+-->
+      <remap from="pose" to="gt_pose"/>
+      <param name="publish_freq" value="5"/>
+      <param name="frame_id" value="$(arg sensor_frame_id)"/>
+      <rosparam file="$(arg sensor_config_file)" command="load" />
+    </node>
+  </group>
+
+
+</launch>

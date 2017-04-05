@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>phd_conversion</name>
+  <version>0.0.0</version>
+  <description>The phd_conversion package</description>
+  <maintainer email="pdames@seas.upenn.edu">Philip Dames</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>roscpp</depend>
+  <depend>ffld_ros</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>phd_msgs</depend>
+</package>
+

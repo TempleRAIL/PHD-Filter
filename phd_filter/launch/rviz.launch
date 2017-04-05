@@ -1,0 +1,4 @@
+<launch>
+  <node name="rviz" pkg="rviz" type="rviz"
+        args="--display-config=$(find phd_filter)/launch/scarab0.rviz" />
+</launch>

@@ -1,0 +1,24 @@
+fov_vertical: deg(45)
+fov_horizontal: deg(60)
+width: 480
+height: 360
+
+std_dev_rr: 10.0
+std_dev_rc: 0.0
+std_dev_cc: 10.0
+
+kappa: 0.5319
+
+characteristic_length: 0.38 # length of Crown Victoria
+det_prob:
+  - {pixels: 0, prob: 0.0}
+  - {pixels: 1, prob: 0.1}
+  - {pixels: 2, prob: 0.2}
+  - {pixels: 3, prob: 0.3}
+  - {pixels: 4, prob: 0.4}
+  - {pixels: 5, prob: 0.5}
+  - {pixels: 6, prob: 0.6}
+  - {pixels: 7, prob: 0.7}
+  - {pixels: 8, prob: 0.8}
+  - {pixels: 9, prob: 0.9}
+  - {pixels: 10, prob: 0.9}

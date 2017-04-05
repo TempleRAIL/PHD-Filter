@@ -1,0 +1,27 @@
+range_max: 5.00
+range_min: 0.00
+std_dev: 1.00
+kappa: 0.1000
+
+det_prob:
+  - {range: 0.00, prob: 0.9000}
+  - {range: 0.25, prob: 0.8955}
+  - {range: 0.50, prob: 0.8822}
+  - {range: 0.75, prob: 0.8604}
+  - {range: 1.00, prob: 0.8308}
+  - {range: 1.25, prob: 0.7942}
+  - {range: 1.50, prob: 0.7517}
+  - {range: 1.75, prob: 0.7044}
+  - {range: 2.00, prob: 0.6535}
+  - {range: 2.25, prob: 0.6003}
+  - {range: 2.50, prob: 0.5459}
+  - {range: 2.75, prob: 0.4915}
+  - {range: 3.00, prob: 0.4381}
+  - {range: 3.25, prob: 0.3866}
+  - {range: 3.50, prob: 0.3378}
+  - {range: 3.75, prob: 0.2922}
+  - {range: 4.00, prob: 0.2502}
+  - {range: 4.25, prob: 0.2122}
+  - {range: 4.50, prob: 0.1781}
+  - {range: 4.75, prob: 0.1480}
+  - {range: 5.00, prob: 0.1218}

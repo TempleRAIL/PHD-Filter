@@ -1,0 +1,26 @@
+bearing_max: deg(135.00)
+bearing_min: deg(-135.00)
+range_max: 5.00
+range_min: 0.00
+std_dev_rr: 0.02
+std_dev_rb: 0.0
+std_dev_bb: deg(2.0)
+kappa: 0.0400
+skip_beams: 4
+target_diam: 0.0413
+intensity_threshold: 11000.0
+
+det_prob:
+  - {range: 0.00, prob: 0.9900}
+  - {range: 2.36, prob: 0.9900}
+  - {range: 2.50, prob: 0.9365}
+  - {range: 2.75, prob: 0.8514}
+  - {range: 3.00, prob: 0.7804}
+  - {range: 3.25, prob: 0.7204}
+  - {range: 3.50, prob: 0.6689}
+  - {range: 3.75, prob: 0.6243}
+  - {range: 4.00, prob: 0.5853}
+  - {range: 4.25, prob: 0.5509}
+  - {range: 4.50, prob: 0.5203}
+  - {range: 4.75, prob: 0.4929}
+  - {range: 5.00, prob: 0.4682}

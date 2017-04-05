@@ -1,0 +1,11 @@
+<launch>
+
+  <node name="detection_bearing" pkg="phd_filter" type="detection_bearing" output="screen">
+  	<remap from="measurements" to="/scarab0/measurements"/>
+  	<remap from="object_detections" to="/object_detector/object_detections"/>
+  	<remap from="pose" to="/scarab0/gt_pose"/>
+
+  	<param name="frame_id" value="/scarab0/base"/>
+  </node>
+
+</launch>

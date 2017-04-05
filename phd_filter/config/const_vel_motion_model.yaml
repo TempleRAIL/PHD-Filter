@@ -1,0 +1,20 @@
+motion_model: 2 # Do not change this value
+
+dt: 1.0
+
+cov_xx: 1.0
+cov_xy: 0.00
+cov_yy: 1.0
+
+cov_vxvx: 1.0
+cov_vxvy: 0.00
+cov_vyvy: 1.0
+
+survival_prob: 0.9797
+
+birth_rate: 0.6788
+
+origin_x: 0.0
+origin_y: 0.0
+width: 61.515
+height: 55.597
