@@ -39,6 +39,9 @@ public:
     name_ = pn_.getNamespace();
     int i = name_.find_last_of("/");
     name_ = name_.substr(0, i);
+    
+    const Sensor<phd_msgs::Bearing>::Params& par = sensor_->getParams();
+		int_generator_ = boost::random::uniform_int_distribution<>(0, par.confusion_matrix.size()-1);
   }
 
   static SensorSim* ROSInit(const ros::NodeHandle& n) {
@@ -80,7 +83,7 @@ public:
   virtual void spin(void);
   virtual Measurement addNoiseToMeasurement(const Measurement& z);
   virtual Measurement drawClutterMeasurement(const std::string& frame_id);
-  virtual geometry_msgs::Pose drawPoseFromMeasurement(const Measurement& m,
+  virtual phd_msgs::Target drawTargetFromMeasurement(const Measurement& m,
     const geometry_msgs::Pose& p);
 
 private:
@@ -112,6 +115,7 @@ private:
   RANDType rand_;
   Uniform uniform_;
   Gaussian gaussian_;
+  boost::random::uniform_int_distribution<> int_generator_;
   boost::variate_generator<RANDType, Uniform > uniform_generator_;
   boost::variate_generator<RANDType, Gaussian > gaussian_generator_;
 

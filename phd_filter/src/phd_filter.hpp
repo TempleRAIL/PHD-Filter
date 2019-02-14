@@ -2,7 +2,9 @@
 #define PHD_FILTER_HPP
 
 #include <algorithm>  // max, random_shuffle
+#include <cmath>      // isnan
 #include <math.h>     // hypot
+#include <memory>			// shared_ptr
 #include <string>
 #include <vector>
 
@@ -37,7 +39,7 @@ public:
     int num_particles_birth;  // Number of birth particles per time step
     int num_particles_birth_per_measurement;
     double frac_birth_measurement;
-    double num_targets;       // initial number of targets
+    double num_targets;       // initial number of targets per type
     double origin_x;          // x value of map origin
     double width;             // width of environment
     double origin_y;          // y value of map origin
@@ -63,19 +65,26 @@ public:
         p.pose.position.x = x;
         p.pose.position.y = y;
         p.w = p_.num_targets / num_particles;
-        phd_.particles.push_back(p);
+        for (const auto& t : sensor_->getSensor()->getParams().confusion_matrix) {
+					p.type = t.first;
+					phd_.particles.push_back(p);
+				}
       }
     }
     std::random_shuffle(phd_.particles.begin(), phd_.particles.end());
 
-    // Initialize PHD grid
-    phd_grid_.reset(new GridMap(p_.origin_x, p_.width, p_.origin_y, p_.height, p_.grid_res, p_.max_value));
-    setPHDGrid();
-    phd_grid_->setFrameId(p_.map_frame);
+    // Initialize PHD grids and publishers
+    for (const auto& t : sensor_->getSensor()->getParams().confusion_matrix) {
+			phd_grid_[t.first] = std::shared_ptr<GridMap>(new GridMap(p_.origin_x, p_.width, p_.origin_y, p_.height, p_.grid_res, p_.max_value));
+			phd_grid_[t.first]->setFrameId(p_.map_frame);
+			
+			phd_grid_pub_[t.first] = n_.advertise<nav_msgs::OccupancyGrid>("phd_grid_"+t.first, 1, true);
+			ROS_INFO("PHD Filter:: Created grid map for type %s", t.first.c_str());
+		}
+		setPHDGrid();
 
     measurement_sub_ = n_.subscribe("measurements", 100, &PHDFilter::measurementCallback, this);
     phd_pub_ = n_.advertise<phd_msgs::ParticleArray>("phd", 1, true);
-    phd_grid_pub_ = n_.advertise<nav_msgs::OccupancyGrid>("phd_grid", 1, true);
     marker_pub_ = pn_.advertise<visualization_msgs::Marker>("markers", 1, true);
 
     if (p_.dt > 0.0) {
@@ -144,7 +153,9 @@ public:
     phd_pub_.publish(phd_);
 
     setPHDGrid();
-    phd_grid_pub_.publish(phd_grid_->occGrid());
+    for (const auto& pub : phd_grid_pub_) {
+			pub.second.publish(phd_grid_[pub.first]->occGrid());
+		}
   }
 
   // pubVis
@@ -241,15 +252,19 @@ private:
   }
 
   void setPHDGrid(void) {
-    phd_grid_->fill(0.0);
-    for (int i = 0; i < phd_.particles.size(); ++i) {
-      const phd_msgs::Particle& p = phd_.particles[i];
-      int xi, yi;
-      phd_grid_->getSubscript(p.pose.position.x, p.pose.position.y, &xi, &yi);
-      if (phd_grid_->valid(xi, yi)) {
-        phd_grid_->set(xi, yi, phd_grid_->get(xi, yi) + p.w);
-      }
-    }
+		for (const auto& g : phd_grid_) {
+			g.second->fill(0.0);
+		}
+		for (int i = 0; i < phd_.particles.size(); ++i) {
+			const phd_msgs::Particle& p = phd_.particles[i];
+			int xi, yi;
+			if (phd_grid_.count(p.type) > 0) {
+				phd_grid_[p.type]->getSubscript(p.pose.position.x, p.pose.position.y, &xi, &yi);
+				if (phd_grid_[p.type]->valid(xi, yi)) {
+					phd_grid_[p.type]->set(xi, yi, phd_grid_[p.type]->get(xi, yi) + p.w);
+				}
+			}
+		}
   }
 
   // measurementCallback
@@ -269,14 +284,6 @@ private:
     if (p_.num_particles_birth > 0) {
       phd_msgs::ParticleArray phd_new;
       motion_predictor_->birthParticles(&phd_new, p_.num_particles_birth);
-
-      // Set weight and add new particles to PHD
-      double w_new = (1.0 - p_.frac_birth_measurement) *
-        motion_predictor_->getMotionModel()->birthRate() / phd_new.particles.size();
-      for (int i = 0; i < phd_new.particles.size(); ++i) {
-        phd_new.particles[i].w = w_new;
-        phd_.particles.push_back(phd_new.particles[i]);
-      }
     }
 
     pubParticles();
@@ -313,10 +320,12 @@ private:
         tf::Pose x_tf;
         poseMsgToTF(p.pose, x_tf);
         x_tf = transform * x_tf;
-        geometry_msgs::Pose x;
-        poseTFToMsg(x_tf, x);
+        
+        phd_msgs::Target t;
+        poseTFToMsg(x_tf, t.pose);
+        t.type = p.type;
 
-        p_det[i] = sensor_->getSensor()->detProb(x);
+        p_det[i] = sensor_->getSensor()->detProb(t);
         if (p_det[i] > 0.0) {
           footprintIndices[footprintCount++] = i;
         }
@@ -328,7 +337,7 @@ private:
     }
     for (int zi = 0; zi < nZ; ++zi) {
       denominator[zi] = sensor_->getSensor()->clutterLikelihood(Z[zi]) + EPS;
-      if (isnan(denominator[zi])) {
+      if (std::isnan(denominator[zi])) {
         ROS_ERROR("Denominator is nan, shutting down");
         ros::shutdown();
       }
@@ -341,13 +350,15 @@ private:
       tf::Pose x_tf;
       tf::poseMsgToTF(p.pose, x_tf);
       x_tf = transform * x_tf;
-      geometry_msgs::Pose x;
-      tf::poseTFToMsg(x_tf, x);
+        
+			phd_msgs::Target t;
+			poseTFToMsg(x_tf, t.pose);
+			t.type = p.type;
 
       for (int zi = 0; zi < nZ; ++zi) {
-        double p_z = sensor_->getSensor()->measurementLikelihood(Z[zi], x);
+        double p_z = sensor_->getSensor()->measurementLikelihood(Z[zi], t);
         psi[ind][zi] = p_det[ind] * p_z;
-        if (isnan(psi[ind][zi])) {
+        if (std::isnan(psi[ind][zi])) {
           ROS_ERROR("Psi is nan, shutting down, p_z = %.3f, p_det = %.3f", p_z, p_det[ind]);
           ros::shutdown();
         }
@@ -365,7 +376,7 @@ private:
         w += psi[ind][zi] / denominator[zi];
       }
       p.w *= w;
-      if (isnan(p.w)) {
+      if (std::isnan(p.w)) {
         ROS_ERROR("PHD is nan, shutting down");
         ros::shutdown();
       }
@@ -391,17 +402,14 @@ private:
         for (int i = 0; i < p_.num_particles_birth_per_measurement; ++i, ++it) {
           // Add noise to each measurement and convert to a pose
           Measurement z = sensor_->addNoiseToMeasurement(Z[j]);
-          it->pose = sensor_->drawPoseFromMeasurement(z, pose);
+          it->pose = sensor_->drawTargetFromMeasurement(z, pose).pose;
         }
       }
 
-      // Set weight and add new particles to PHD
-      double w_new = p_.frac_birth_measurement *
-        (t_now_ - t_last_).toSec() / p_.dt *
-        motion_predictor_->getMotionModel()->birthRate() /
-        phd_new.particles.size();
+      // Update weight and add new particles to PHD
       for (int i = 0; i < phd_new.particles.size(); ++i) {
-        phd_new.particles[i].w = w_new;
+        phd_new.particles[i].w *= p_.frac_birth_measurement *
+					(t_now_ - t_last_).toSec() / p_.dt;
         phd_.particles.push_back(phd_new.particles[i]);
       }
     }
@@ -417,13 +425,15 @@ private:
   boost::scoped_ptr< SensorSim<Measurement, MeasurementSet> > sensor_;
   boost::scoped_ptr<MotionPredictor> motion_predictor_;
   phd_msgs::ParticleArray phd_;
-  boost::scoped_ptr<GridMap> phd_grid_, map_;
+  boost::scoped_ptr<GridMap> map_;
+  std::map<std::string, std::shared_ptr<GridMap> > phd_grid_;
   boost::scoped_ptr<Resampler> resampler_;
   ros::Time t_now_, t_last_;
 
   ros::NodeHandle n_, pn_;
   ros::Subscriber measurement_sub_;
-  ros::Publisher phd_pub_, marker_pub_, phd_grid_pub_;
+  ros::Publisher phd_pub_, marker_pub_;
+  std::map<std::string, ros::Publisher> phd_grid_pub_;
   ros::Timer prediction_timer_;
   int resample_count_;
 };

@@ -1,6 +1,9 @@
 #ifndef MOTION_PREDICTOR_HPP
 #define MOTION_PREDICTOR_HPP
 
+#include <map>
+#include <string>
+
 #include <boost/scoped_ptr.hpp>
 #include <boost/random.hpp>
 
@@ -15,19 +18,24 @@ namespace phd {
 class MotionPredictor {
 public:
   struct Params {
-    int motion_model;         // type of motion model
-                              // 0 = static (default)
-                              // 1 = Gaussian random walk
-                              // 2 = Constant velocity
+    std::map<std::string, int> motion_models;         
+			// type of motion model
+			// 0 = static (default)
+			// 1 = Gaussian random walk
+			// 2 = Constant velocity
   };
 
   // Constructor
-  MotionPredictor(const Params& p, MotionModel* motion_model) : p_(p), rand_(0) {
-    motion_model_.reset(motion_model);
-    if (motion_model_->birthRate() > 0.0) {
-      poisson_.reset(new Poisson(motion_model_->birthRate()));
-      poisson_generator_.reset(new boost::variate_generator<RANDType, Poisson >(rand_, *poisson_));
-    }
+  MotionPredictor(const Params& p, std::map<std::string, MotionModel*> motion_models) : p_(p), rand_(0) {
+		for (const auto& m : p.motion_models) {
+			models_[m.first].model.reset(motion_models[m.first]);
+			
+			if (models_[m.first].model->birthRate() > 0.0) {
+				models_[m.first].poisson.reset(new Poisson(models_[m.first].model->birthRate()));
+				models_[m.first].poisson_generator.reset(
+					new boost::variate_generator<RANDType, Poisson >(rand_, *(models_[m.first].poisson)));
+			}
+		}
   }
 
   // Destructor
@@ -39,29 +47,31 @@ public:
   // Return a pointer to a new PHDFilter constructed from ROS parameters
   static MotionPredictor* ROSInit(const ros::NodeHandle& n) {
     MotionPredictor::Params p;
+    
+    n.getParam("motion_models", p.motion_models);
 
-    n.param("motion_model", p.motion_model, -1);
+    std::map<std::string, MotionModel*> motion_models;
+    for (auto m : p.motion_models) {
+			switch (m.second) {
+				case 0:
+					motion_models[m.first] = StaticMotionModel::ROSInit(ros::NodeHandle(n, m.first));
+					break;
 
-    MotionModel* motion_model;
-    switch (p.motion_model) {
-      case 0:
-         motion_model = StaticMotionModel::ROSInit(n);
-        break;
+				case 1:
+					motion_models[m.first] = GRWMotionModel::ROSInit(ros::NodeHandle(n, m.first));
+					break;
 
-      case 1:
-        motion_model = GRWMotionModel::ROSInit(n);
-        break;
+				case 2:
+					motion_models[m.first] = ConstVelMotionModel::ROSInit(ros::NodeHandle(n, m.first));
+					break;
 
-      case 2:
-        motion_model = ConstVelMotionModel::ROSInit(n);
-        break;
+				default:
+					ROS_WARN("PHDFilter: No such motion model defined for %s, using static model", m.first.c_str());
+					motion_models[m.first] = StaticMotionModel::ROSInit(ros::NodeHandle(n, m.first));
+			}
+		}
 
-      default:
-        ROS_WARN("PHDFilter: No such motion model defined, using static model");
-        motion_model = StaticMotionModel::ROSInit(n);
-    }
-
-    MotionPredictor* motion_predictor = new MotionPredictor(p, motion_model);
+    MotionPredictor* motion_predictor = new MotionPredictor(p, motion_models);
     return motion_predictor;
   }
 
@@ -77,19 +87,23 @@ public:
   // Draw particles from birth PHD
   void birthParticles(phd_msgs::ParticleArray* pa, int num_particles = -1);
 
-  MotionModel* getMotionModel(void) { return motion_model_.get(); }
+  MotionModel* getMotionModel(const std::string& s) { return models_[s].model.get(); }
 
 private:
-  // Class members
-  Params p_;
-  boost::scoped_ptr<MotionModel> motion_model_;
-
   typedef boost::mt19937 RANDType;
   typedef boost::poisson_distribution<> Poisson;
+  
+  struct MotionModelGen {
+		boost::scoped_ptr<MotionModel> model;
+		boost::scoped_ptr<Poisson> poisson;
+		boost::scoped_ptr<boost::variate_generator<RANDType, Poisson > > poisson_generator;
+	};
+
+  // Class members
+  Params p_;
+  std::map<std::string, MotionModelGen> models_;
 
   RANDType rand_;
-  boost::scoped_ptr<Poisson> poisson_;
-  boost::scoped_ptr< boost::variate_generator<RANDType, Poisson > > poisson_generator_;
 };
 
 } // end namespace

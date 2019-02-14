@@ -12,9 +12,9 @@ namespace phd {
 template <class MArray>
 class SensorRepublisher {
 public:
-  SensorRepublisher(std::string name, ros::Publisher* measurement_pub)
+  SensorRepublisher(std::string name, std::string topic, ros::Publisher* measurement_pub)
       : pn_(name), measurement_pub_(measurement_pub) {
-    measurement_sub_ = pn_.subscribe("measurements", 1, &SensorRepublisher::measurementCallback, this);
+    measurement_sub_ = pn_.subscribe(topic, 1, &SensorRepublisher::measurementCallback, this);
   }
 
 private:
@@ -34,9 +34,10 @@ public:
   SensorAggregator(const ros::NodeHandle& n) : n_() {
     measurement_pub_ = n_.advertise<MArray>("measurements", 10, true);
 
-    std::string agent_name;
+    std::string agent_name, topic_name;
     int num_agents, num_agents_offset;
     n.param("agent_prefix", agent_name, std::string("scarab"));
+    n.param("topic_name", topic_name, std::string("measurements"));
     n.param("num_agents", num_agents, 0);
     n.param("num_agents_offset", num_agents_offset, 0);
 
@@ -46,7 +47,7 @@ public:
       name_key << agent_name << i + num_agents_offset;
       n.param(name_key.str(), name, name_key.str());
 
-      republishers_[name] = new SensorRepublisher<MArray>(name, &measurement_pub_);
+      republishers_[name] = new SensorRepublisher<MArray>(name, topic_name, &measurement_pub_);
     }
   }
 

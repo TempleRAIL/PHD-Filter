@@ -1,1 +1,1 @@
-phd_msgs/Target[] poses
+phd_msgs/Target[] array

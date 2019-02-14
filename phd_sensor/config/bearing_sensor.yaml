@@ -1,17 +1,23 @@
-bearing_max: deg(135.0)
-bearing_min: deg(-135.0)
-range_max: 15.00
+bearing_max: deg(180.0)
+bearing_min: deg(-180.0)
+range_max: 10.00
 range_min: 0.20
-std_dev: deg(2.25)
+
+std_dev: deg(1.25)
+
 kappa: 0.5319
-clutter_bin_width: rad(0.2000 * pi)
-clutter_bin_weight: 0.2750
+clutter_bin_width: 0
+clutter_bin_weight: 0
+
 skip_beams: 4
 target_diam: 0.0413
 intensity_threshold: 11000.0
 
 det_prob:
-  - {range: 0.00, prob: 0.8000}
-  - {range: 15.00, prob: 0.8000}
+  - {range: 0.00, prob: 0.9900}
+  - {range: 10.00, prob: 0.9900}
+  
+target_types: ['person', 'chair', 'table']
+confusion_matrix: [0.9, 0.05, 0.05, 0.1, 0.8, 0.1, 0.15, 0.15, 0.7]
 
 map_service: "/static_map"

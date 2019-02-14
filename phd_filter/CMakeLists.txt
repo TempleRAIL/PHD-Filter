@@ -6,10 +6,23 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
 
-find_package(catkin REQUIRED roscpp std_msgs geometry_msgs nav_msgs
-                    phd_msgs phd_sensor tf cmake_modules)
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+
+find_package(catkin REQUIRED 
+	roscpp 
+	std_msgs 
+	geometry_msgs 
+	nav_msgs
+	phd_msgs 
+	phd_sensor 
+	tf 
+	cmake_modules
+)
 find_package(Eigen3 REQUIRED)
-find_package(Boost REQUIRED COMPONENTS random thread)
+find_package(Boost REQUIRED COMPONENTS
+	random
+	thread
+)
 
 catkin_package(
   LIBRARIES motion_predictor
@@ -25,15 +38,30 @@ include_directories(
   ${EIGEN3_INCLUDE_DIRS}
 )
 
-add_library(motion_predictor src/motion_predictor.cpp)
-add_dependencies(motion_predictor ${catkin_EXPORTED_TARGETS}
-                                  ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(motion_predictor ${catkin_LIBRARIES})
+# Motion Predictor Library
+add_library(motion_predictor 
+	src/motion_predictor.cpp
+)
+add_dependencies(motion_predictor
+	${catkin_EXPORTED_TARGETS}
+	${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+target_link_libraries(motion_predictor
+	${catkin_LIBRARIES}
+)
 
-add_executable(motion_simulator_node src/motion_simulator.cpp)
-target_link_libraries(motion_simulator_node ${catkin_LIBRARIES} motion_predictor)
-add_dependencies(motion_simulator_node ${catkin_EXPORTED_TARGETS}
-                                        ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# Motion Simulator Node
+add_executable(motion_simulator_node 
+	src/motion_simulator.cpp
+)
+target_link_libraries(motion_simulator_node
+	${catkin_LIBRARIES} 
+	motion_predictor
+)
+add_dependencies(motion_simulator_node
+	${catkin_EXPORTED_TARGETS}
+	${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
 
 # Range-only sensor
 #~ add_executable(phd_filter_range_node src/phd_filter_range_node.cpp)
@@ -50,11 +78,18 @@ add_dependencies(motion_simulator_node ${catkin_EXPORTED_TARGETS}
                                         #~ phd_sensor_EXPORTED_TARGETS)
 
 # Bearing-only sensor
-add_executable(phd_filter_bearing_node src/phd_filter_bearing_node.cpp)
-target_link_libraries(phd_filter_bearing_node ${catkin_LIBRARIES} motion_predictor)
-add_dependencies(phd_filter_bearing_node ${catkin_EXPORTED_TARGETS}
-                                        ${${PROJECT_NAME}_EXPORTED_TARGETS}
-                                        phd_sensor_EXPORTED_TARGETS)
+add_executable(phd_filter_bearing_node 
+	src/phd_filter_bearing_node.cpp
+)
+target_link_libraries(phd_filter_bearing_node 
+	${catkin_LIBRARIES} 
+	motion_predictor
+)
+add_dependencies(phd_filter_bearing_node 
+	${catkin_EXPORTED_TARGETS}
+	${${PROJECT_NAME}_EXPORTED_TARGETS}
+	${phd_sensor_EXPORTED_TARGETS}
+)
 
 # Range-bearing sensor
 #~ add_executable(phd_filter_range_bearing_node src/phd_filter_range_bearing_node.cpp)

@@ -15,3 +15,5 @@ float32 max_bearing     # maximum bearing value [rad]
 float32 bearing         # bearing data [rad]
                         # (Note: values < bearing_min or > bearing_max
                         # should be discarded)
+
+string type				# type of target detected
