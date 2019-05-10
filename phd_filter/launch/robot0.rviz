@@ -29,6 +29,8 @@ Panels:
     Name: Time
     SyncMode: 0
     SyncSource: LaserScan
+Toolbars:
+  toolButtonStyle: 2
 Visualization Manager:
   Class: ""
   Displays:
@@ -133,6 +135,30 @@ Visualization Manager:
           Value: true
         robot0/sensor:
           Value: true
+        robot1/base:
+          Value: true
+        robot1/odom:
+          Value: true
+        robot1/sensor:
+          Value: true
+        robot2/base:
+          Value: true
+        robot2/odom:
+          Value: true
+        robot2/sensor:
+          Value: true
+        robot3/base:
+          Value: true
+        robot3/odom:
+          Value: true
+        robot3/sensor:
+          Value: true
+        robot4/base:
+          Value: true
+        robot4/odom:
+          Value: true
+        robot4/sensor:
+          Value: true
         table0/base:
           Value: true
         table0/odom:
@@ -208,6 +234,22 @@ Visualization Manager:
           robot0/odom:
             robot0/base:
               robot0/sensor:
+                {}
+          robot1/odom:
+            robot1/base:
+              robot1/sensor:
+                {}
+          robot2/odom:
+            robot2/base:
+              robot2/sensor:
+                {}
+          robot3/odom:
+            robot3/base:
+              robot3/sensor:
+                {}
+          robot4/odom:
+            robot4/base:
+              robot4/sensor:
                 {}
           table0/odom:
             table0/base:
@@ -298,7 +340,7 @@ Visualization Manager:
           Marker Topic: /phd_filter/markers
           Name: Marker
           Namespaces:
-            phd: true
+            {}
           Queue Size: 100
           Value: true
         - Alpha: 0.699999988
@@ -331,8 +373,20 @@ Visualization Manager:
           Unreliable: false
           Use Timestamp: false
           Value: false
-      Enabled: true
+      Enabled: false
       Name: PHD
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Marker
+          Enabled: true
+          Marker Topic: /phd_filter/peak_markers
+          Name: PeakMarker
+          Namespaces:
+            peak: true
+          Queue Size: 100
+          Value: true
+      Enabled: true
+      Name: PEAK
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -367,11 +421,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 35.1090965
+      Scale: 16.3048077
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: 7.91391134
-      Y: 6.57564497
+      X: 14.4260159
+      Y: 16.6667156
     Saved: ~
 Window Geometry:
   Displays:

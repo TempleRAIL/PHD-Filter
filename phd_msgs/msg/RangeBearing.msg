@@ -18,3 +18,5 @@ float32 bearing         # bearing data [rad]
 float32 range           # range data [rad]
                         # (Note: values < range_min or > range_max
                         # should be discarded)
+
+string type		# type of target detected

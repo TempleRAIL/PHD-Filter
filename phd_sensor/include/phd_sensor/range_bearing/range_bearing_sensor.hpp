@@ -31,6 +31,12 @@ public:
     // probability of detection, in (range, probability) pairs
     // these points are linearly interpolated
     std::vector<std::pair<double, double> > det_prob;
+    
+    // confusion matrix for target types
+	// confusion_matrix['true_class']['measured_class'] = p(measured_class | true_class)
+	std::map<std::string, std::map<std::string, double> > confusion_matrix;
+	
+	std::vector<std::string> target_types;
   };
   typedef phd_msgs::RangeBearing Measurement;
 
@@ -52,6 +58,8 @@ public:
     ROS_ASSERT(n.hasParam("std_dev_rb"));
     ROS_ASSERT(n.hasParam("det_prob"));
     ROS_ASSERT(n.hasParam("kappa"));
+    ROS_ASSERT(n.hasParam("target_types"));
+	ROS_ASSERT(n.hasParam("confusion_matrix"));
 
     Sensor::Params p;
     n.getParam("bearing_max", p.bearing_max);
@@ -91,6 +99,24 @@ public:
     }
     ROS_ASSERT( fabs(p.det_prob.front().first - p.range_min) < EPS );
     ROS_ASSERT( fabs(p.det_prob.back().first - p.range_max) < EPS );
+    
+	// Read in confusion matrix
+	std::vector<double> cm;
+	
+	n.getParam("target_types", p.target_types);
+	n.getParam("confusion_matrix", cm);
+	ROS_ASSERT(p.target_types.size() * p.target_types.size() == p.confusion_matrix.size());
+	
+	for (int i = 0; i < p.target_types.size(); ++i) {
+		double sum = 0;
+		for (int j = 0; j < p.target_types.size(); ++j) {
+			ROS_ASSERT( cm[i*p.target_types.size() + j] >= 0 );
+			p.confusion_matrix[p.target_types[i]][p.target_types[j]] = cm[i*p.target_types.size() + j];
+			sum += cm[i*p.target_types.size() + j];
+			//~ ROS_INFO("CM(%s, %s) = %f", target_types[i].c_str(), target_types[j].c_str(), cm[i*target_types.size() + j]);
+		}
+		ROS_ASSERT( fabs(sum - 1.0) < EPS );
+	}    
 
     Sensor* sensor = new Sensor(p);
     return sensor;
@@ -98,59 +124,59 @@ public:
 
   const Params& getParams(void) { return p_; }
   double getClutterRate(void) const { return p_.kappa; }
+  
+  	double detProb(const phd_msgs::Target& x) const {
+		// Check if within visible bounds of sensor
+		double bearing = atan2(x.pose.position.y, x.pose.position.x);
+		if (p_.bearing_min >= bearing || bearing >= p_.bearing_max) {
+			return 0.0;
+		}
+		double range = hypot(x.pose.position.x, x.pose.position.y);
+		if (p_.range_min >= range || range >= p_.range_max) {
+			return 0.0;
+		}
+		// Check if line-of-sight
+		double theta = tf::getYaw(pose_.orientation);
+		double c = cos(theta), s = sin(theta);
+		geometry_msgs::Pose p;
+		p.position.x = c * x.pose.position.x - s * x.pose.position.y + pose_.position.x;
+		p.position.y = s * x.pose.position.x + c * x.pose.position.y + pose_.position.y;
+		if (!map_->lineOfSight(pose_.position.x, pose_.position.y,
+													 p.position.x, p.position.y)) {
+			return 0.0;
+		}
 
-  double detProb(const geometry_msgs::Pose& x) const {
-    // Check if within visible bounds of sensor
-    double bearing = atan2(x.position.y, x.position.x);
-    if (p_.bearing_min >= bearing || bearing >= p_.bearing_max) {
-      return 0.0;
-    }
-    double range = hypot(x.position.x, x.position.y);
-    if (p_.range_min >= range || range >= p_.range_max) {
-      return 0.0;
-    }
-    // Check if line-of-sight
-    double theta = tf::getYaw(pose_.orientation);
-    double c = cos(theta), s = sin(theta);
-    geometry_msgs::Pose p;
-    p.position.x = c * x.position.x - s * x.position.y + pose_.position.x;
-    p.position.y = s * x.position.x + c * x.position.y + pose_.position.y;
-    if (!map_->lineOfSight(pose_.position.x, pose_.position.y,
-                           p.position.x, p.position.y)) {
-      return 0.0;
-    }
-
-    for (int i = 0; i < p_.det_prob.size()-1; ++i) {
-      double r0 = p_.det_prob[i].first;
-      double r1 = p_.det_prob[i+1].first;
-      if (r0 <= range && range <= r1) {
-        double frac = (range - r0) / (r1 - r0);
-        double p0 = p_.det_prob[i].second;
-        double p1 = p_.det_prob[i+1].second;
-        return p0 + frac * (p1 - p0);
-      }
-    }
-    ROS_WARN("%s: Bearing not specified", ros::this_node::getName().c_str());
-    return 0.0;
-  }
+		for (int i = 0; i < p_.det_prob.size()-1; ++i) {
+			double r0 = p_.det_prob[i].first;
+			double r1 = p_.det_prob[i+1].first;
+			if (r0 <= range && range <= r1) {
+				double frac = (range - r0) / (r1 - r0);
+				double p0 = p_.det_prob[i].second;
+				double p1 = p_.det_prob[i+1].second;
+				return p0 + frac * (p1 - p0);
+			}
+		}
+		ROS_WARN("%s: Bearing not specified", ros::this_node::getName().c_str());
+		return 0.0;
+	}
 
   double measurementLikelihood(const Measurement& z,
-                                       const geometry_msgs::Pose& x) const {
+                                       const phd_msgs::Target& x) const {
     Eigen::Vector2d z0, z1;
     z0(0) = static_cast<double>(z.range);
     z0(1) = static_cast<double>(z.bearing);
-    z1(0) = hypot(x.position.x, x.position.y);
-    z1(1) = atan2(x.position.y, x.position.x);
+    z1(0) = hypot(x.pose.position.x, x.pose.position.y);
+    z1(1) = atan2(x.pose.position.y, x.pose.position.x);
     // Todo: implement this as a lookup table
     double exponent = (z0 - z1).transpose() * inv_cov_ * (z0 - z1);
-    return normalizer_ * exp(-exponent / 2.0);
+    return normalizer_ * exp(-exponent / 2.0) * p_.confusion_matrix.at(x.type).at(z.type);
   }
 
   double clutterLikelihood(const Measurement& z) const {
     return p_.kappa / (p_.bearing_max - p_.bearing_min);
   }
 
-  Measurement poseToMeasurement(const geometry_msgs::Pose& p,
+    Measurement poseToMeasurement(const phd_msgs::Target& t,
 			const std::string& frame_id) const {
 		Measurement z;
 		z.header.stamp = ros::Time::now();
@@ -161,8 +187,9 @@ public:
 		z.min_bearing = p_.bearing_min;
 		z.max_bearing = p_.bearing_max;
 
-		z.range = hypot(p.position.x, p.position.y);
-		z.bearing = atan2(p.position.y, p.position.x);
+		z.range = hypot(t.pose.position.x, t.pose.position.y);
+		z.bearing = atan2(t.pose.position.y, t.pose.position.x);
+		z.type = t.type;
 
 		return z;
 	}

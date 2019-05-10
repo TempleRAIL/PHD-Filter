@@ -1,0 +1,17 @@
+<launch>
+  <node pkg="map_server" 
+	name="map" 
+	type="map_server" 
+	output="screen" 
+
+args="$(find maps_simulations_ros)/levine_towne/levine_towne_B.yaml"/>
+</launch>
+<!--
+	args="$(find map_environment_simulation_ros)/autolab/autolab.yaml"/>
+	args="$(find maps_simulations_ros)/intel_research_lab/intel_B.yaml"/>
+	args="$(find maps_simulations_ros)/west_wing/west_wing.yaml"/>
+	args="$(find maps_simulations_ros)/ACES3_Austin/ACES3_Austin_A.yaml"/>
+	args="$(find maps_simulations_ros)/ACES3_Austin/ACES3_Austin_B.yaml"/>
+	args="$(find maps_simulations_ros)/levine_towne/levine_towne_A.yaml"/>
+	args="$(find maps_simulations_ros)/levine_towne/levine_towne_B.yaml"/>
+-->

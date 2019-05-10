@@ -2,17 +2,17 @@ motion_model: 2 # Do not change this value
 
 dt: 1.0
 
-cov_xx: 1.0
+cov_xx: 0.0001
 cov_xy: 0.00
-cov_yy: 1.0
+cov_yy: 0.0001
 
-cov_vxvx: 1.0
+cov_vxvx: 0.0001
 cov_vxvy: 0.00
-cov_vyvy: 1.0
+cov_vyvy: 0.0001
 
-survival_prob: 0.9797
+survival_prob: 1.0
 
-birth_rate: 0.6788
+birth_rate: 0.0
 
 origin_x: 0.0
 origin_y: 0.0

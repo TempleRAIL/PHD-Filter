@@ -1,6 +1,7 @@
 #ifndef BEARING_SENSOR_HPP
 #define BEARING_SENSOR_HPP
 
+#include <cmath> // M_PI definition
 #include <utility>
 #include <vector>
 #include <map>

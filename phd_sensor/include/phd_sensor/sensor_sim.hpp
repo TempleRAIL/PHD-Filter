@@ -40,7 +40,7 @@ public:
     int i = name_.find_last_of("/");
     name_ = name_.substr(0, i);
     
-    const Sensor<phd_msgs::Bearing>::Params& par = sensor_->getParams();
+    const Sensor<phd_msgs::RangeBearing>::Params& par = sensor_->getParams();
 		int_generator_ = boost::random::uniform_int_distribution<>(0, par.confusion_matrix.size()-1);
   }
 

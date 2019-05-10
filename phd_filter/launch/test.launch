@@ -57,7 +57,26 @@
     <param name="num_agents" value="$(arg num_targets)"/>
     <param name="agent_prefix" value="target"/>
 
-    <rosparam file="$(find phd_filter)/launch/targets_intel40.yaml" command="load" />
+    <param name="initial0" value="5.0 5.6 2.2"/>
+  </node>
+
+  <node name="d_target_sim" pkg="kinematic_sim" type="kinematic_sim"
+        output="screen" respawn="false">
+    <param name="publish_freq" value="7"/>
+    <param name="pub_global_frame" value="true"/>
+
+    <param name="base_frame_id" value="$(arg base_frame_id)"/>
+    <param name="odom_frame_id" value="$(arg odom_frame_id)"/>
+    <param name="global_frame_id" value="$(arg global_frame_id)"/>
+
+    <param name="noise_x_sd" value="0.0"/>
+    <param name="noise_y_sd" value="0.0"/>
+    <param name="noise_th_sd" value="0.0"/>
+
+    <param name="num_agent" value="$(arg num_person)"/>
+    <param name="agent_prefix" value="person"/>
+
+    <rosparam file="$(find phd_filter)/launch/targets_intel10-1.yaml" command="load" />
   </node>
 
   <node name="target_aggregator" pkg="laser_simulator" type="pose_aggregator"
@@ -157,6 +176,7 @@
       <param name="goal_tolerance" value="0.5" />
       <param name="timeout" value="120" />
     </node>
+
 
     <node name="phd_filter" pkg="phd_filter" type="phd_filter_$(arg sensor_type)_node"
           output="screen" respawn="false" launch-prefix="">

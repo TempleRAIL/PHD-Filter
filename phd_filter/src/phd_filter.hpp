@@ -2,19 +2,24 @@
 #define PHD_FILTER_HPP
 
 #include <algorithm>  // max, random_shuffle
-#include <cmath>      // isnan
-#include <math.h>     // hypot
+#include <cmath>     // hypot, isnan, etc.
 #include <memory>			// shared_ptr
 #include <string>
 #include <vector>
+#include <bits/stdc++.h> 
+#include <fstream>
 
 #include <boost/scoped_ptr.hpp>
 
 #include <ros/ros.h>
+#include <ros/console.h>
 #include <tf/transform_datatypes.h>
 #include <visualization_msgs/Marker.h>
 
-#include <phd_msgs/ParticleArray.h>
+#include "phd_msgs/ParticleArray.h"
+#include "phd_msgs/TargetArray.h"
+#include "geometry_msgs/Point.h"
+#include "geometry_msgs/PointStamped.h"
 #include <phd_sensor/sensor_sim.hpp>
 
 #include <motion_model/motion_predictor.hpp>
@@ -22,10 +27,31 @@
 #include <grid_map/grid_map.hpp>
 
 #include "resampler.hpp"
+#include "OSPA.hpp"
 
-#define EPS (1.0e-9)
+// Data structure for OSPA calculation
+class Pos2d{
+
+public:
+  
+  Pos2d(double x, double y): x_(x), y_(y){}
+  ~Pos2d(){}
+
+  double operator-(const Pos2d& other){
+    double dx = x_ - other.x_;
+    double dy = y_ - other.y_;
+    return sqrt(dx*dx + dy*dy);
+  }
+  
+private:
+
+  double x_;
+  double y_;
+
+};
 
 namespace phd {
+
 
 template <class Measurement, class MeasurementSet>
 class PHDFilter {
@@ -59,6 +85,7 @@ public:
     phd_.header.frame_id = p_.map_frame;
 
     double num_particles = floor(p_.width / p_.grid_res) * floor(p_.height / p.grid_res);
+    //ROS_WARN("Width %f, Res %f, Number of particle is %f", p_.width, p_.grid_res, num_particles);  
     for (double x = p_.origin_x; x < p_.origin_x + p_.width; x += p_.grid_res) {
       for (double y = p_.origin_y; y < p_.origin_y + p_.height; y += p_.grid_res) {
         phd_msgs::Particle p;
@@ -71,6 +98,7 @@ public:
 				}
       }
     }
+    //ROS_INFO("PHD NUM = %lu", phd_.particles.size());
     std::random_shuffle(phd_.particles.begin(), phd_.particles.end());
 
     // Initialize PHD grids and publishers
@@ -83,13 +111,23 @@ public:
 		}
 		setPHDGrid();
 
-    measurement_sub_ = n_.subscribe("measurements", 100, &PHDFilter::measurementCallback, this);
+    measurement_sub_ = n_.subscribe("measurements", 100, &PHDFilter::measurementCallback, this);    
     phd_pub_ = n_.advertise<phd_msgs::ParticleArray>("phd", 1, true);
+    peak_marker_pub_ = pn_.advertise<visualization_msgs::Marker>("peak_markers", 1, true);
     marker_pub_ = pn_.advertise<visualization_msgs::Marker>("markers", 1, true);
+    target_sub_ = n_.subscribe("target_array", 5, &PHDFilter::OSPA, this);
+    click_sub_ = n_.subscribe("clicked_point", 1, &PHDFilter::click, this);
 
     if (p_.dt > 0.0) {
       prediction_timer_ = pn_.createTimer(ros::Duration(p.dt), &PHDFilter::predict, this);
     }
+    
+    //std::ofstream save_ospa(path);
+    save_ospa.open("/home/junchen/catkin_ws/src/phd-filter/phd_filter/OSPA.txt");
+	if (~save_ospa.is_open())
+	{
+		ROS_WARN("Failed to create file.");
+	}
   }
 
   // Destructor
@@ -373,9 +411,10 @@ private:
 
       double w = 1.0 - p_det[ind];
       for (int zi = 0; zi < nZ; ++zi) {
-        w += psi[ind][zi] / denominator[zi];
+        w += psi[ind][zi] / denominator[zi];        
       }
       p.w *= w;
+      if (p.w < EPS) {p.w = EPS;}
       if (std::isnan(p.w)) {
         ROS_ERROR("PHD is nan, shutting down");
         ros::shutdown();
@@ -410,6 +449,9 @@ private:
       for (int i = 0; i < phd_new.particles.size(); ++i) {
         phd_new.particles[i].w *= p_.frac_birth_measurement *
 					(t_now_ - t_last_).toSec() / p_.dt;
+		if (phd_new.particles[i].w < EPS) {
+			phd_new.particles[i].w = EPS;
+		}
         phd_.particles.push_back(phd_new.particles[i]);
       }
     }
@@ -417,8 +459,207 @@ private:
     if ((++resample_count_) % p_.resample_every_n == 0) {
       resampler_->resample(&phd_, p_.num_particles_max);
     }
-  }
 
+  }
+  
+    // Find local maxima and calculate OSPA  
+    ros::Time time = ros::Time::now(); 
+	class weight_type
+    {
+	public:
+		weight_type():weight(0.0), type(""){}
+		
+		~weight_type(){}
+
+		double weight;
+		std::string type;
+	};
+	
+	void OSPA(const phd_msgs::TargetArray& tar)
+	{		
+		int rows = floor(p_.width / p_.grid_res), cols = floor(p_.height / p_.grid_res);
+		const std::vector<std::string>& type_name = sensor_->getSensor()->getParams().target_types;     // type names
+		int type_num = type_name.size();
+				
+		std::vector<std::vector<weight_type>> particle(rows);    // particle matrix of all types 
+		for (int i = 0; i < rows; i++)
+			particle[i].resize(cols);
+		
+		std::vector<std::vector<std::vector<weight_type>>> particle_t(type_num);  // particle matrix of each type
+		for (int i = 0; i < type_num; i++)
+		{
+			particle_t[i].resize(rows);
+			for (int j = 0; j < rows; j++)
+				particle_t[i][j].resize(cols);		
+		}
+		
+		int ind_x, ind_y;
+		std::vector<Pos2d> maxima;			// all local maxima		
+		std::vector<std::vector<Pos2d>> type_array(type_num);   // local maxima of each type
+		for (int i = 0; i < phd_.particles.size(); i++) 
+        {			
+			ind_x = (phd_.particles[i].pose.position.x - p_.origin_x) / p_.grid_res ;
+			ind_y = (phd_.particles[i].pose.position.y - p_.origin_y) / p_.grid_res ;
+			particle[ind_x][ind_y].weight += phd_.particles[i].w;
+			
+			for (int j = 0; j < type_num; j++)
+			{
+				particle_t[j][ind_x][ind_y].type = type_name[j];	
+				if(phd_.particles[i].type == type_name[j])
+				{
+					particle_t[j][ind_x][ind_y].weight = phd_.particles[i].w;
+
+				}				
+			}
+		}
+
+		visualization_msgs::Marker m;
+		m.header.stamp = ros::Time::now();
+		m.header.frame_id = p_.map_frame;
+		m.ns = "peak";
+		m.id = 1;
+		m.type = visualization_msgs::Marker::POINTS;
+		m.action = visualization_msgs::Marker::ADD;
+		m.scale.x = m.scale.y = p_.grid_res;
+		const double THRESHOLD = 0.01;
+		for(int row = 0; row < rows; row++)
+			for(int col = 0 ; col < cols; col++)
+			{				
+				// Peak of all classes
+				int cnt_high = 0;
+				int cnt_valid = 0;								
+				for(int i = -2; i < 3; i++) 
+					for(int j = -2; j < 3; j++)
+						if(row+i >= 0 && row+i < rows && col+j >= 0 && col+j < cols) 
+						{
+							cnt_high += particle[row+i][col+j].weight < particle[row][col].weight 
+							&& particle[row][col].weight > THRESHOLD ? 1 : 0 ;
+							++cnt_valid;
+						}
+				if(cnt_high == cnt_valid-1) 
+				{
+					double x = p_.origin_x + row * p_.grid_res;
+					double y = p_.origin_y + col * p_.grid_res;
+
+					Pos2d pos_(x, y);
+					maxima.push_back(pos_);										
+				}
+				
+				// Peak of each class
+				for(int k = 0; k < type_num; k++)
+				{
+					int cnt_high_t = 0;
+					int cnt_valid_t = 0;
+					for(int i = -2; i < 3; i++) 
+						for(int j = -2; j < 3; j++)
+							if(row+i >= 0 && row+i < rows && col+j >= 0 && col+j < cols) 
+							{
+								cnt_high_t += particle_t[k][row+i][col+j].weight < particle_t[k][row][col].weight 
+								&& particle_t[k][row][col].weight > THRESHOLD ? 1 : 0 ;
+								++cnt_valid_t;
+							}
+					if(cnt_high_t == cnt_valid_t-1) 
+					{
+						double x = p_.origin_x + row * p_.grid_res;
+						double y = p_.origin_y + col * p_.grid_res;	
+						Pos2d pos_(x, y);
+						
+						geometry_msgs::Point p;
+						p.x = x;
+						p.y = y;						
+						std_msgs::ColorRGBA c;
+
+						ROS_INFO("A %s is found", particle_t[k][row][col].type.c_str());
+						type_array[k].push_back(pos_);
+						
+						if(k == 0)
+						{
+							c.r = 1.0;
+							c.g = 0.0;
+							c.b = 0.0;
+						}
+						else if(k == 1)
+						{
+							c.r = 0.0;
+							c.g = 1.0;
+							c.b = 0.0;
+						}
+						else if(k == 2)
+						{
+							c.r = 0.0;
+							c.g = 0.0;
+							c.b = 1.0;
+						}
+						else                    // Colors can only support up to 4 different classes
+						{
+							c.r = 0.0;
+							c.g = 0.0;
+							c.b = 0.0;
+						}
+						c.a = 1.0;
+						m.points.push_back(p);				
+						m.colors.push_back(c);										
+					}	
+				}						
+			}
+		peak_marker_pub_.publish(m);		
+		ROS_INFO("Estimation number is %lu", maxima.size());  // for debugging
+			
+		// OSPA calculating fuction. https://github.com/kykleung/RFS-SLAM	
+		double cutoff = 10.0;
+		double order = 1.0;	
+		std::vector<Pos2d> target_set;
+		std::vector<std::vector<Pos2d>> tar_type(type_num);
+		for (int i = 0; i < tar.array.size(); i++)
+		{
+			Pos2d tar_pos_(tar.array[i].pose.position.x, tar.array[i].pose.position.y);
+			target_set.push_back(tar_pos_);
+			for (int j = 0; j < type_num; j++)
+			{
+				if(tar.array[i].type == type_name[j]) 
+					tar_type[j].push_back(tar_pos_);
+			}
+		}
+		ROS_INFO("Target number is %lu", target_set.size());       // for debugging
+
+		rfs::OSPA<Pos2d> ospa(maxima, target_set, cutoff, order);
+		std::vector<double> e(type_num+1);
+		double e_d, e_c;
+		e[0] = ospa.calcError(&e_d, &e_c, true);
+		/*ospa.reportSoln();
+		std::cout << "OSPA error:        " << e << std::endl;
+	    std::cout << "distance error:    " << e_d << std::endl;
+		std::cout << "cardinality error: " << e_c << std::endl;*/
+		ROS_INFO("OSPA is %f",e[0]);    
+					
+		for(int i = 0; i < type_num; i++)
+		{
+			rfs::OSPA<Pos2d> ospa_type(type_array[i], tar_type[i], cutoff, order);
+			e[i+1] = ospa_type.calcError(&e_d, &e_c, true);
+			ROS_INFO("OSPA of %s is %f", type_name[i].c_str(), e[i+1]);    
+		}
+		save_ospa << ros::Time::now() << ' ' << e[0] << ' ' << e[1] << ' ' << e[2] << ' ' << e[3] << '\n';
+		
+	}
+	
+	// Show PHD weight at clicked point on rviz
+	void click(const geometry_msgs::PointStamped& pt)
+	{
+		//~ double click = 0.0;
+		std::string s = "";
+		for (int i = 0; i < phd_.particles.size(); i++)
+		{
+			if (fabs(pt.point.x - phd_.particles[i].pose.position.x + p_.grid_res/2.0) < p_.grid_res/2.0 && 
+			fabs(pt.point.y - phd_.particles[i].pose.position.y + p_.grid_res/2.0) < p_.grid_res/2.0)
+			{
+				//~ click += phd_.particles[i].w;
+				s += '\n' + " type: " + phd_.particles[i].type + " w: " + std::to_string(phd_.particles[i].w);				
+			}			
+		}
+		ROS_WARN("Weight %s", s.c_str());
+		ros::Duration(3.0).sleep();
+	}
+	
 
   // Class members
   Params p_;
@@ -431,11 +672,13 @@ private:
   ros::Time t_now_, t_last_;
 
   ros::NodeHandle n_, pn_;
-  ros::Subscriber measurement_sub_;
-  ros::Publisher phd_pub_, marker_pub_;
+  ros::Subscriber measurement_sub_, target_sub_, click_sub_;
+  ros::Publisher phd_pub_, marker_pub_, peak_marker_pub_;
   std::map<std::string, ros::Publisher> phd_grid_pub_;
   ros::Timer prediction_timer_;
   int resample_count_;
+
+  std::ofstream save_ospa;
 };
 
 } // end namespace

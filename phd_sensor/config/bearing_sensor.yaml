@@ -3,9 +3,9 @@ bearing_min: deg(-180.0)
 range_max: 10.00
 range_min: 0.20
 
-std_dev: deg(1.25)
+std_dev: deg(10.0)
 
-kappa: 0.5319
+kappa: 0.00366 #0.5319
 clutter_bin_width: 0
 clutter_bin_weight: 0
 

@@ -78,23 +78,23 @@ add_dependencies(motion_simulator_node
                                         #~ phd_sensor_EXPORTED_TARGETS)
 
 # Bearing-only sensor
-add_executable(phd_filter_bearing_node 
-	src/phd_filter_bearing_node.cpp
-)
-target_link_libraries(phd_filter_bearing_node 
-	${catkin_LIBRARIES} 
-	motion_predictor
-)
-add_dependencies(phd_filter_bearing_node 
-	${catkin_EXPORTED_TARGETS}
-	${${PROJECT_NAME}_EXPORTED_TARGETS}
-	${phd_sensor_EXPORTED_TARGETS}
-)
+#add_executable(phd_filter_bearing_node 
+#	src/phd_filter_bearing_node.cpp
+#)
+#target_link_libraries(phd_filter_bearing_node 
+#	${catkin_LIBRARIES} 
+#	motion_predictor
+#)
+#add_dependencies(phd_filter_bearing_node 
+#	${catkin_EXPORTED_TARGETS}
+#	${${PROJECT_NAME}_EXPORTED_TARGETS}
+#	${phd_sensor_EXPORTED_TARGETS}
+#)
 
 # Range-bearing sensor
-#~ add_executable(phd_filter_range_bearing_node src/phd_filter_range_bearing_node.cpp)
-#~ target_link_libraries(phd_filter_range_bearing_node ${catkin_LIBRARIES} motion_predictor)
-#~ add_dependencies(phd_filter_range_bearing_node ${catkin_EXPORTED_TARGETS}
-                                        #~ ${${PROJECT_NAME}_EXPORTED_TARGETS}
-                                        #~ phd_sensor_EXPORTED_TARGETS)
+add_executable(phd_filter_range_bearing_node src/phd_filter_range_bearing_node.cpp)
+target_link_libraries(phd_filter_range_bearing_node ${catkin_LIBRARIES} motion_predictor)
+add_dependencies(phd_filter_range_bearing_node ${catkin_EXPORTED_TARGETS}
+                                        ${${PROJECT_NAME}_EXPORTED_TARGETS}
+                                        phd_sensor_EXPORTED_TARGETS)
 
