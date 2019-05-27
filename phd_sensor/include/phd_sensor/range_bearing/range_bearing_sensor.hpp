@@ -105,7 +105,7 @@ public:
 	
 	n.getParam("target_types", p.target_types);
 	n.getParam("confusion_matrix", cm);
-	ROS_ASSERT(p.target_types.size() * p.target_types.size() == p.confusion_matrix.size());
+	ROS_ASSERT(p.target_types.size() * p.target_types.size() == cm.size());
 	
 	for (int i = 0; i < p.target_types.size(); ++i) {
 		double sum = 0;
@@ -169,7 +169,12 @@ public:
     z1(1) = atan2(x.pose.position.y, x.pose.position.x);
     // Todo: implement this as a lookup table
     double exponent = (z0 - z1).transpose() * inv_cov_ * (z0 - z1);
-    return normalizer_ * exp(-exponent / 2.0) * p_.confusion_matrix.at(x.type).at(z.type);
+    if (p_.confusion_matrix.count(x.type) > 0 && 
+		p_.confusion_matrix.at(x.type).count(z.type) > 0)
+	{
+		return normalizer_ * exp(-exponent / 2.0) * p_.confusion_matrix.at(x.type).at(z.type);
+	}
+	else return 0.0;
   }
 
   double clutterLikelihood(const Measurement& z) const {

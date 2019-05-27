@@ -74,6 +74,7 @@ public:
     double max_value;         // value to saturate PHD particle weight
     std::string map_frame;    // map frame
     double dt;                // duration of prediction time step
+    std::string ospa_filename;// path to save ospa.txt
   };
 
   // Constructor
@@ -115,6 +116,7 @@ public:
     phd_pub_ = n_.advertise<phd_msgs::ParticleArray>("phd", 1, true);
     peak_marker_pub_ = pn_.advertise<visualization_msgs::Marker>("peak_markers", 1, true);
     marker_pub_ = pn_.advertise<visualization_msgs::Marker>("markers", 1, true);
+    //target_sub_ = n_.subscribe("target_fov", 5, &PHDFilter::OSPA, this);  // use only when dynamic targets inside fov
     target_sub_ = n_.subscribe("target_array", 5, &PHDFilter::OSPA, this);
     click_sub_ = n_.subscribe("clicked_point", 1, &PHDFilter::click, this);
 
@@ -123,10 +125,11 @@ public:
     }
     
     //std::ofstream save_ospa(path);
-    save_ospa.open("/home/junchen/catkin_ws/src/phd-filter/phd_filter/OSPA.txt");
+    save_ospa.open(p_.ospa_filename);
 	if (~save_ospa.is_open())
 	{
 		ROS_WARN("Failed to create file.");
+		ROS_WARN("%s", p_.ospa_filename.c_str());
 	}
   }
 
@@ -153,6 +156,7 @@ public:
     n.param("max_value", p.max_value, 1.0);
     n.param("map_frame", p.map_frame, std::string("/map"));
     n.param("motion/dt", p.dt, -1.0);
+    n.param("ospa_filename", p.ospa_filename, std::string(""));
 
     SensorSim<Measurement, MeasurementSet>* sensor =
       SensorSim<Measurement, MeasurementSet>::ROSInit(ros::NodeHandle(n, "sensor"));
@@ -414,7 +418,7 @@ private:
         w += psi[ind][zi] / denominator[zi];        
       }
       p.w *= w;
-      if (p.w < EPS) {p.w = EPS;}
+      if (p.w < EPS) p.w = EPS;
       if (std::isnan(p.w)) {
         ROS_ERROR("PHD is nan, shutting down");
         ros::shutdown();
@@ -521,7 +525,7 @@ private:
 		m.type = visualization_msgs::Marker::POINTS;
 		m.action = visualization_msgs::Marker::ADD;
 		m.scale.x = m.scale.y = p_.grid_res;
-		const double THRESHOLD = 0.01;
+		const double THRESHOLD = 0.000003; //0.0005
 		for(int row = 0; row < rows; row++)
 			for(int col = 0 ; col < cols; col++)
 			{				
@@ -569,7 +573,7 @@ private:
 						p.y = y;						
 						std_msgs::ColorRGBA c;
 
-						ROS_INFO("A %s is found", particle_t[k][row][col].type.c_str());
+						//ROS_INFO("A %s is found", particle_t[k][row][col].type.c_str());
 						type_array[k].push_back(pos_);
 						
 						if(k == 0)
@@ -612,12 +616,17 @@ private:
 		std::vector<std::vector<Pos2d>> tar_type(type_num);
 		for (int i = 0; i < tar.array.size(); i++)
 		{
-			Pos2d tar_pos_(tar.array[i].pose.position.x, tar.array[i].pose.position.y);
-			target_set.push_back(tar_pos_);
-			for (int j = 0; j < type_num; j++)
+			if(tar.array[i].pose.position.x > p_.origin_x && 
+			tar.array[i].pose.position.x < p_.origin_x + p_.width &&
+			tar.array[i].pose.position.y > p_.origin_y &&
+			tar.array[i].pose.position.y < p_.origin_y + p_.height) 
 			{
-				if(tar.array[i].type == type_name[j]) 
-					tar_type[j].push_back(tar_pos_);
+				Pos2d tar_pos_(tar.array[i].pose.position.x, tar.array[i].pose.position.y);
+				target_set.push_back(tar_pos_);
+				for (int j = 0; j < type_num; j++)
+				{
+					if(tar.array[i].type == type_name[j]) tar_type[j].push_back(tar_pos_);					
+				}				
 			}
 		}
 		ROS_INFO("Target number is %lu", target_set.size());       // for debugging
@@ -641,7 +650,7 @@ private:
 		save_ospa << ros::Time::now() << ' ' << e[0] << ' ' << e[1] << ' ' << e[2] << ' ' << e[3] << '\n';
 		
 	}
-	
+
 	// Show PHD weight at clicked point on rviz
 	void click(const geometry_msgs::PointStamped& pt)
 	{

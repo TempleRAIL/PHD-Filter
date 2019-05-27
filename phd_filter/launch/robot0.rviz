@@ -7,7 +7,6 @@ Panels:
         - /Global Options1
         - /Status1
         - /robot01
-        - /PHD1
       Splitter Ratio: 0.5
     Tree Height: 565
   - Class: rviz/Selection
@@ -75,9 +74,89 @@ Visualization Manager:
           Value: true
         chair1/odom:
           Value: true
+        chair10/base:
+          Value: true
+        chair10/odom:
+          Value: true
+        chair11/base:
+          Value: true
+        chair11/odom:
+          Value: true
+        chair12/base:
+          Value: true
+        chair12/odom:
+          Value: true
+        chair13/base:
+          Value: true
+        chair13/odom:
+          Value: true
+        chair14/base:
+          Value: true
+        chair14/odom:
+          Value: true
+        chair15/base:
+          Value: true
+        chair15/odom:
+          Value: true
+        chair16/base:
+          Value: true
+        chair16/odom:
+          Value: true
+        chair17/base:
+          Value: true
+        chair17/odom:
+          Value: true
+        chair18/base:
+          Value: true
+        chair18/odom:
+          Value: true
+        chair19/base:
+          Value: true
+        chair19/odom:
+          Value: true
         chair2/base:
           Value: true
         chair2/odom:
+          Value: true
+        chair20/base:
+          Value: true
+        chair20/odom:
+          Value: true
+        chair21/base:
+          Value: true
+        chair21/odom:
+          Value: true
+        chair22/base:
+          Value: true
+        chair22/odom:
+          Value: true
+        chair23/base:
+          Value: true
+        chair23/odom:
+          Value: true
+        chair24/base:
+          Value: true
+        chair24/odom:
+          Value: true
+        chair25/base:
+          Value: true
+        chair25/odom:
+          Value: true
+        chair26/base:
+          Value: true
+        chair26/odom:
+          Value: true
+        chair27/base:
+          Value: true
+        chair27/odom:
+          Value: true
+        chair28/base:
+          Value: true
+        chair28/odom:
+          Value: true
+        chair29/base:
+          Value: true
+        chair29/odom:
           Value: true
         chair3/base:
           Value: true
@@ -117,9 +196,89 @@ Visualization Manager:
           Value: true
         person1/odom:
           Value: true
+        person10/base:
+          Value: true
+        person10/odom:
+          Value: true
+        person11/base:
+          Value: true
+        person11/odom:
+          Value: true
+        person12/base:
+          Value: true
+        person12/odom:
+          Value: true
+        person13/base:
+          Value: true
+        person13/odom:
+          Value: true
+        person14/base:
+          Value: true
+        person14/odom:
+          Value: true
+        person15/base:
+          Value: true
+        person15/odom:
+          Value: true
+        person16/base:
+          Value: true
+        person16/odom:
+          Value: true
+        person17/base:
+          Value: true
+        person17/odom:
+          Value: true
+        person18/base:
+          Value: true
+        person18/odom:
+          Value: true
+        person19/base:
+          Value: true
+        person19/odom:
+          Value: true
         person2/base:
           Value: true
         person2/odom:
+          Value: true
+        person20/base:
+          Value: true
+        person20/odom:
+          Value: true
+        person21/base:
+          Value: true
+        person21/odom:
+          Value: true
+        person22/base:
+          Value: true
+        person22/odom:
+          Value: true
+        person23/base:
+          Value: true
+        person23/odom:
+          Value: true
+        person24/base:
+          Value: true
+        person24/odom:
+          Value: true
+        person25/base:
+          Value: true
+        person25/odom:
+          Value: true
+        person26/base:
+          Value: true
+        person26/odom:
+          Value: true
+        person27/base:
+          Value: true
+        person27/odom:
+          Value: true
+        person28/base:
+          Value: true
+        person28/odom:
+          Value: true
+        person29/base:
+          Value: true
+        person29/odom:
           Value: true
         person3/base:
           Value: true
@@ -129,35 +288,31 @@ Visualization Manager:
           Value: true
         person4/odom:
           Value: true
+        person5/base:
+          Value: true
+        person5/odom:
+          Value: true
+        person6/base:
+          Value: true
+        person6/odom:
+          Value: true
+        person7/base:
+          Value: true
+        person7/odom:
+          Value: true
+        person8/base:
+          Value: true
+        person8/odom:
+          Value: true
+        person9/base:
+          Value: true
+        person9/odom:
+          Value: true
         robot0/base:
           Value: true
         robot0/odom:
           Value: true
         robot0/sensor:
-          Value: true
-        robot1/base:
-          Value: true
-        robot1/odom:
-          Value: true
-        robot1/sensor:
-          Value: true
-        robot2/base:
-          Value: true
-        robot2/odom:
-          Value: true
-        robot2/sensor:
-          Value: true
-        robot3/base:
-          Value: true
-        robot3/odom:
-          Value: true
-        robot3/sensor:
-          Value: true
-        robot4/base:
-          Value: true
-        robot4/odom:
-          Value: true
-        robot4/sensor:
           Value: true
         table0/base:
           Value: true
@@ -167,9 +322,89 @@ Visualization Manager:
           Value: true
         table1/odom:
           Value: true
+        table10/base:
+          Value: true
+        table10/odom:
+          Value: true
+        table11/base:
+          Value: true
+        table11/odom:
+          Value: true
+        table12/base:
+          Value: true
+        table12/odom:
+          Value: true
+        table13/base:
+          Value: true
+        table13/odom:
+          Value: true
+        table14/base:
+          Value: true
+        table14/odom:
+          Value: true
+        table15/base:
+          Value: true
+        table15/odom:
+          Value: true
+        table16/base:
+          Value: true
+        table16/odom:
+          Value: true
+        table17/base:
+          Value: true
+        table17/odom:
+          Value: true
+        table18/base:
+          Value: true
+        table18/odom:
+          Value: true
+        table19/base:
+          Value: true
+        table19/odom:
+          Value: true
         table2/base:
           Value: true
         table2/odom:
+          Value: true
+        table20/base:
+          Value: true
+        table20/odom:
+          Value: true
+        table21/base:
+          Value: true
+        table21/odom:
+          Value: true
+        table22/base:
+          Value: true
+        table22/odom:
+          Value: true
+        table23/base:
+          Value: true
+        table23/odom:
+          Value: true
+        table24/base:
+          Value: true
+        table24/odom:
+          Value: true
+        table25/base:
+          Value: true
+        table25/odom:
+          Value: true
+        table26/base:
+          Value: true
+        table26/odom:
+          Value: true
+        table27/base:
+          Value: true
+        table27/odom:
+          Value: true
+        table28/base:
+          Value: true
+        table28/odom:
+          Value: true
+        table29/base:
+          Value: true
+        table29/odom:
           Value: true
         table3/base:
           Value: true
@@ -178,6 +413,26 @@ Visualization Manager:
         table4/base:
           Value: true
         table4/odom:
+          Value: true
+        table5/base:
+          Value: true
+        table5/odom:
+          Value: true
+        table6/base:
+          Value: true
+        table6/odom:
+          Value: true
+        table7/base:
+          Value: true
+        table7/odom:
+          Value: true
+        table8/base:
+          Value: true
+        table8/odom:
+          Value: true
+        table9/base:
+          Value: true
+        table9/odom:
           Value: true
       Marker Scale: 5
       Name: TF
@@ -192,8 +447,68 @@ Visualization Manager:
           chair1/odom:
             chair1/base:
               {}
+          chair10/odom:
+            chair10/base:
+              {}
+          chair11/odom:
+            chair11/base:
+              {}
+          chair12/odom:
+            chair12/base:
+              {}
+          chair13/odom:
+            chair13/base:
+              {}
+          chair14/odom:
+            chair14/base:
+              {}
+          chair15/odom:
+            chair15/base:
+              {}
+          chair16/odom:
+            chair16/base:
+              {}
+          chair17/odom:
+            chair17/base:
+              {}
+          chair18/odom:
+            chair18/base:
+              {}
+          chair19/odom:
+            chair19/base:
+              {}
           chair2/odom:
             chair2/base:
+              {}
+          chair20/odom:
+            chair20/base:
+              {}
+          chair21/odom:
+            chair21/base:
+              {}
+          chair22/odom:
+            chair22/base:
+              {}
+          chair23/odom:
+            chair23/base:
+              {}
+          chair24/odom:
+            chair24/base:
+              {}
+          chair25/odom:
+            chair25/base:
+              {}
+          chair26/odom:
+            chair26/base:
+              {}
+          chair27/odom:
+            chair27/base:
+              {}
+          chair28/odom:
+            chair28/base:
+              {}
+          chair29/odom:
+            chair29/base:
               {}
           chair3/odom:
             chair3/base:
@@ -222,8 +537,68 @@ Visualization Manager:
           person1/odom:
             person1/base:
               {}
+          person10/odom:
+            person10/base:
+              {}
+          person11/odom:
+            person11/base:
+              {}
+          person12/odom:
+            person12/base:
+              {}
+          person13/odom:
+            person13/base:
+              {}
+          person14/odom:
+            person14/base:
+              {}
+          person15/odom:
+            person15/base:
+              {}
+          person16/odom:
+            person16/base:
+              {}
+          person17/odom:
+            person17/base:
+              {}
+          person18/odom:
+            person18/base:
+              {}
+          person19/odom:
+            person19/base:
+              {}
           person2/odom:
             person2/base:
+              {}
+          person20/odom:
+            person20/base:
+              {}
+          person21/odom:
+            person21/base:
+              {}
+          person22/odom:
+            person22/base:
+              {}
+          person23/odom:
+            person23/base:
+              {}
+          person24/odom:
+            person24/base:
+              {}
+          person25/odom:
+            person25/base:
+              {}
+          person26/odom:
+            person26/base:
+              {}
+          person27/odom:
+            person27/base:
+              {}
+          person28/odom:
+            person28/base:
+              {}
+          person29/odom:
+            person29/base:
               {}
           person3/odom:
             person3/base:
@@ -231,25 +606,24 @@ Visualization Manager:
           person4/odom:
             person4/base:
               {}
+          person5/odom:
+            person5/base:
+              {}
+          person6/odom:
+            person6/base:
+              {}
+          person7/odom:
+            person7/base:
+              {}
+          person8/odom:
+            person8/base:
+              {}
+          person9/odom:
+            person9/base:
+              {}
           robot0/odom:
             robot0/base:
               robot0/sensor:
-                {}
-          robot1/odom:
-            robot1/base:
-              robot1/sensor:
-                {}
-          robot2/odom:
-            robot2/base:
-              robot2/sensor:
-                {}
-          robot3/odom:
-            robot3/base:
-              robot3/sensor:
-                {}
-          robot4/odom:
-            robot4/base:
-              robot4/sensor:
                 {}
           table0/odom:
             table0/base:
@@ -257,14 +631,89 @@ Visualization Manager:
           table1/odom:
             table1/base:
               {}
+          table10/odom:
+            table10/base:
+              {}
+          table11/odom:
+            table11/base:
+              {}
+          table12/odom:
+            table12/base:
+              {}
+          table13/odom:
+            table13/base:
+              {}
+          table14/odom:
+            table14/base:
+              {}
+          table15/odom:
+            table15/base:
+              {}
+          table16/odom:
+            table16/base:
+              {}
+          table17/odom:
+            table17/base:
+              {}
+          table18/odom:
+            table18/base:
+              {}
+          table19/odom:
+            table19/base:
+              {}
           table2/odom:
             table2/base:
+              {}
+          table20/odom:
+            table20/base:
+              {}
+          table21/odom:
+            table21/base:
+              {}
+          table22/odom:
+            table22/base:
+              {}
+          table23/odom:
+            table23/base:
+              {}
+          table24/odom:
+            table24/base:
+              {}
+          table25/odom:
+            table25/base:
+              {}
+          table26/odom:
+            table26/base:
+              {}
+          table27/odom:
+            table27/base:
+              {}
+          table28/odom:
+            table28/base:
+              {}
+          table29/odom:
+            table29/base:
               {}
           table3/odom:
             table3/base:
               {}
           table4/odom:
             table4/base:
+              {}
+          table5/odom:
+            table5/base:
+              {}
+          table6/odom:
+            table6/base:
+              {}
+          table7/odom:
+            table7/base:
+              {}
+          table8/odom:
+            table8/base:
+              {}
+          table9/odom:
+            table9/base:
               {}
       Update Interval: 0
       Value: true
@@ -337,56 +786,42 @@ Visualization Manager:
       Displays:
         - Class: rviz/Marker
           Enabled: true
-          Marker Topic: /phd_filter/markers
-          Name: Marker
+          Marker Topic: /phd_filter/peak_markers
+          Name: PeakMarker
           Namespaces:
             {}
           Queue Size: 100
           Value: true
-        - Alpha: 0.699999988
-          Class: rviz/Map
-          Color Scheme: map
-          Draw Behind: false
-          Enabled: false
-          Name: PHD chair
-          Topic: /phd_grid_chair
-          Unreliable: false
-          Use Timestamp: false
-          Value: false
-        - Alpha: 0.699999988
-          Class: rviz/Map
-          Color Scheme: map
-          Draw Behind: false
-          Enabled: false
-          Name: PHD table
-          Topic: /phd_grid_table
-          Unreliable: false
-          Use Timestamp: false
-          Value: false
-        - Alpha: 0.699999988
-          Class: rviz/Map
-          Color Scheme: map
-          Draw Behind: false
-          Enabled: false
-          Name: PHD person
-          Topic: /phd_grid_person
-          Unreliable: false
-          Use Timestamp: false
-          Value: false
       Enabled: false
-      Name: PHD
+      Name: PEAK
     - Class: rviz/Group
       Displays:
         - Class: rviz/Marker
           Enabled: true
-          Marker Topic: /phd_filter/peak_markers
-          Name: PeakMarker
+          Marker Topic: /table/phd_filter/markers
+          Name: phd_table
           Namespaces:
-            peak: true
+            phd: true
+          Queue Size: 100
+          Value: true
+        - Class: rviz/Marker
+          Enabled: true
+          Marker Topic: /person/phd_filter/markers
+          Name: phd_person
+          Namespaces:
+            phd: true
+          Queue Size: 100
+          Value: true
+        - Class: rviz/Marker
+          Enabled: true
+          Marker Topic: /chair/phd_filter/markers
+          Name: phd_chair
+          Namespaces:
+            phd: true
           Queue Size: 100
           Value: true
       Enabled: true
-      Name: PEAK
+      Name: PHD
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -421,11 +856,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 16.3048077
+      Scale: 12.9527206
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: 14.4260159
-      Y: 16.6667156
+      X: 21.3246231
+      Y: 16.7383614
     Saved: ~
 Window Geometry:
   Displays:
@@ -443,5 +878,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 543
-  Y: 57
+  X: 560
+  Y: 566

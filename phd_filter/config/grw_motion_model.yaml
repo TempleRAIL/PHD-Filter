@@ -7,12 +7,12 @@ cov_xy: 0.00
 cov_yy: 0.0001
 
 survival_prob: 1.0
-survival_dist: 0.0
+survival_dist: 1.0
 
-birth_rate: 0.0
+birth_rate: 0.0001
 
 origin_x: 0.0
 origin_y: 0.0
-width: 61.515
-height: 55.597
+width: 20.0
+height: 20.0
 

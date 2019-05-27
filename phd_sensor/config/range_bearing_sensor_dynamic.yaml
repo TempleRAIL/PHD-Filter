@@ -1,6 +1,6 @@
-bearing_max: deg(60.00)
-bearing_min: deg(-60.00)
-range_max: 5.00
+bearing_max: deg(180.00)
+bearing_min: deg(-180.00)
+range_max: 15.00
 range_min: 0.00
 std_dev_rr: 0.02
 std_dev_rb: 0.0
@@ -27,23 +27,23 @@ intensity_threshold: 11000.0
 
 det_prob:
   - {range: 0.00, prob: 0.9900}
-#  - {range: 10.00, prob: 0.9900}
-  - {range: 2.50, prob: 0.9865}
-  - {range: 2.75, prob: 0.9814}
-  - {range: 3.00, prob: 0.9764}
-  - {range: 3.25, prob: 0.9704}
-  - {range: 3.50, prob: 0.9689}
-  - {range: 3.75, prob: 0.9643}
-  - {range: 4.00, prob: 0.9553}
-  - {range: 4.25, prob: 0.9409}
-  - {range: 4.50, prob: 0.9303}
-  - {range: 4.75, prob: 0.9229}
-  - {range: 5.00, prob: 0.9082}
+  - {range: 15.00, prob: 0.9900}
+#  - {range: 2.50, prob: 0.9865}
+#  - {range: 3.75, prob: 0.9814}
+#  - {range: 4.00, prob: 0.9764}
+#  - {range: 5.25, prob: 0.9704}
+#  - {range: 5.50, prob: 0.9689}
+#  - {range: 6.75, prob: 0.9643}
+#  - {range: 7.00, prob: 0.9553}
+#  - {range: 7.25, prob: 0.9409}
+#  - {range: 8.50, prob: 0.9303}
+#  - {range: 8.75, prob: 0.9229}
+#  - {range: 10.00, prob: 0.9082}
 
-target_types: ['person', 'chair', 'table']
-confusion_matrix: [0.9, 0.05, 0.05, 0.1, 0.8, 0.1, 0.15, 0.15, 0.7]
+target_types: ['person', 'chair']
+#confusion_matrix: [0.9, 0.05, 0.05, 0.1, 0.8, 0.1, 0.15, 0.15, 0.7]
 #confusion_matrix: [0.8, 0.15, 0.05, 0.2, 0.7, 0.1, 0.2, 0.25, 0.55]
-#confusion_matrix: [0.7, 0.15, 0.15, 0.15, 0.6, 0.25, 0.25, 0.25, 0.5]
+confusion_matrix: [0.9, 0.1, 0.1, 0.9]
 #confusion_matrix: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
 
 map_service: "/static_map"

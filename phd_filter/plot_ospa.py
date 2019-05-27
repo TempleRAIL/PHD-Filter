@@ -1,33 +1,43 @@
 import matplotlib.pyplot as plt
 import csv
 
-x = []
-y = []
-y1 = []
-y2 = []
-y3 = []
+x1_ = []
+x2_ = []
+x3_ = []
+y1_ = []
+y2_ = []
+y3_ = []
 
-with open('OSPA.txt','r') as csvfile:
-    plots = csv.reader(csvfile, delimiter=' ')
-    row1 = next(plots)
-    for row in plots:
-        x.append(float(row[0])-float(row1[0]))
-        y.append(float(row[1]))
-        y1.append(float(row[2]))
-	y2.append(float(row[3]))
-	y3.append(float(row[4]))
+with open('OSPA_Para/OSPA_person3.txt','r') as person:
+	plots1 = csv.reader(person, delimiter=' ')
+	row1 = next(plots1)
+	for row in plots1:
+		x1_.append(float(row[0])-float(row1[0]))
+		y1_.append(float(row[2]))
 
-plt.gca().set_color_cycle(['red', 'green', 'blue', 'yellow'])
-linestyles = ['-', '--', '-.', ':']
+with open('OSPA_Para/OSPA_chair3.txt','r') as chair:
+	plots2 = csv.reader(chair, delimiter=' ')
+	for row in plots2:
+		x2_.append(float(row[0])-float(row1[0]))
+		y2_.append(float(row[2]))
 
-plt.plot(x,y, label='All Classes')
-plt.plot(x,y1, label='Person', linestyle=':', linewidth=1)
-plt.plot(x,y2, label='Chair', linestyle=':', linewidth=1)
-plt.plot(x,y3, label='Table', linestyle=':', linewidth=1)
+with open('OSPA_Para/OSPA_table3.txt','r') as table:
+	plots3 = csv.reader(table, delimiter=' ')
+	for row in plots3:
+		x3_.append(float(row[0])-float(row1[0]))
+		y3_.append(float(row[2]))		
 
-plt.xlabel('Time (s)')
-plt.ylabel('OSPA error (m)')
+plt.rcParams.update({'font.size': 18})
+plt.gca().set_color_cycle(['red', 'green', 'blue'])
+plt.plot(x1_,y1_, label='Person', linestyle=':', linewidth=1.5)
+plt.plot(x2_,y2_, label='Chair', linestyle=':', linewidth=1.5)
+plt.plot(x3_,y3_, label='Table', linestyle=':', linewidth=1.5)
+
+plt.ylim(0, 10)
+plt.xlabel('Time (s)', fontsize=18)
+plt.ylabel('OSPA error (m)', fontsize=18)
 plt.title('OSPA Errors')
 plt.legend()
 plt.show()
+
 

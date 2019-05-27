@@ -98,3 +98,17 @@ add_dependencies(phd_filter_range_bearing_node ${catkin_EXPORTED_TARGETS}
                                         ${${PROJECT_NAME}_EXPORTED_TARGETS}
                                         phd_sensor_EXPORTED_TARGETS)
 
+# Confusion Matrix
+add_executable(confusion_matrix src/confusion_matrix.cpp)
+target_link_libraries(confusion_matrix ${catkin_LIBRARIES})
+add_dependencies(confusion_matrix
+	${catkin_EXPORTED_TARGETS}
+	${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+
+add_executable(inside_fov src/inside_fov.cpp)
+target_link_libraries(inside_fov ${catkin_LIBRARIES})
+add_dependencies(inside_fov
+	${catkin_EXPORTED_TARGETS}
+	${${PROJECT_NAME}_EXPORTED_TARGETS}
+)

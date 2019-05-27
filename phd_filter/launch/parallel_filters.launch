@@ -1,0 +1,196 @@
+<launch>
+	
+  <arg name="sensor_type" default="range_bearing" />
+	
+  <arg name="rviz_on" default="true" />
+
+<!--
+	Robot Information
+-->
+  <arg name="agent_prefix" default="robot" />
+  <arg name="num_agents"   default="1" />
+
+  <arg name="sensor_config_file" default="$(find phd_sensor)/config/$(arg sensor_type)_sensor.yaml" />
+
+  <arg name="sensor_frame_id" default="sensor" />
+  <arg name="base_frame_id"   default="base" />
+  <arg name="odom_frame_id"   default="odom" />
+  <arg name="global_frame_id" default="/map" />
+  
+<!--
+  Target information
+-->
+  <arg name="num_target_types" default="3" />
+
+  <arg name="target_prefix0" default="chair" />
+  <arg name="num_targets0"   default="30" />
+  <arg name="motion_model_file0"  value="$(find phd_filter)/config/static_motion_model.yaml" />
+  <arg name="sensor_config_file0" default="$(find phd_sensor)/config/$(arg sensor_type)_sensor_$(arg target_prefix0).yaml" />
+	
+  <arg name="target_prefix1" default="table" />
+  <arg name="num_targets1"   default="30" />
+  <arg name="motion_model_file1"  value="$(find phd_filter)/config/static_motion_model.yaml" />
+  <arg name="sensor_config_file1" default="$(find phd_sensor)/config/$(arg sensor_type)_sensor_$(arg target_prefix1).yaml" />
+	
+  <arg name="target_prefix2" default="person" />
+  <arg name="num_targets2"   default="30" />
+  <arg name="motion_model_file2"  value="$(find phd_filter)/config/grw_motion_model.yaml" />
+  <arg name="sensor_config_file2" default="$(find phd_sensor)/config/$(arg sensor_type)_sensor_$(arg target_prefix2).yaml" />
+
+<!--
+	Sensor simulation
+-->
+	<include file="$(find phd_sensor)/launch/parallel_sensor.launch" pass_all_args="true" >
+		<arg name="rviz_on" value="false" />
+	</include>
+	
+<!--
+  RVIZ
+-->
+  <group if="$(arg rviz_on)">
+    <node name="rviz" pkg="rviz" type="rviz"
+          args="--display-config=$(find phd_filter)/launch/robot0.rviz" />
+  </group>
+
+<!--
+	Aggregate robot sensor measurements for PHD filter
+-->
+  <node name="sensor_aggregator" pkg="phd_sensor" type="$(arg sensor_type)_aggregator"
+        output="screen" respawn="false" launch-prefix="">
+    <param name="num_agents" value="$(arg num_agents)"/>
+    <param name="agent_prefix" value="$(arg agent_prefix)"/>
+    <param name="topic_name" value="measurements_throttle"/>
+  </node>
+
+  <node name="confusion_matrix" pkg="phd_filter" type="confusion_matrix">
+	<rosparam file="$(arg sensor_config_file)" command="load" />
+               <remap from="cm_measurements" to="/cm_measurements"/>
+  </node>
+<!--
+	PHD filter
+-->
+
+  <node name="phd_filter" pkg="phd_filter" type="phd_filter_$(arg sensor_type)_node"
+        output="screen" respawn="false" ns="$(arg target_prefix0)">
+		<remap from="map" to="/map" />
+		<remap from="pose" to="gt_pose" />
+		<remap from="measurements" to="/cm_measurements" />
+		<remap from="target_array" to="/target_array" />
+
+		<param name="num_targets" value="30.0" />
+		<param name="max_value" value="0.005" />
+		<param name="width" value="40.0" />
+		<param name="height" value="30.0" />
+		<param name="grid_res" value="0.20" />
+
+		<param name="ospa_filename" value="/home/junchen/catkin_ws/src/phd-filter-range-bearing/phd_filter/OSPA_$(arg target_prefix0).txt" />
+
+		<rosparam file="$(arg sensor_config_file0)" ns="sensor" command="load" />
+		<rosparam file="$(arg motion_model_file0)" ns="motion/$(arg target_prefix0)" command="load" />
+	</node>
+
+  <node name="phd_filter" pkg="phd_filter" type="phd_filter_$(arg sensor_type)_node"
+        output="screen" respawn="false" ns="$(arg target_prefix1)">
+		<remap from="map" to="/map" />
+		<remap from="pose" to="gt_pose" />
+		<remap from="measurements" to="/cm_measurements" />
+		<remap from="target_array" to="/target_array" />
+
+		<param name="num_targets" value="30.0" />
+		<param name="max_value" value="0.005" />
+		<param name="width" value="40.0" />
+		<param name="height" value="30.0" />
+		<param name="grid_res" value="0.20" />
+
+		<param name="ospa_filename" value="/home/junchen/catkin_ws/src/phd-filter-range-bearing/phd_filter/OSPA_$(arg target_prefix1).txt" />
+
+		<rosparam file="$(arg sensor_config_file1)" ns="sensor" command="load" />
+		<rosparam file="$(arg motion_model_file1)" ns="motion/$(arg target_prefix1)" command="load" />
+	</node>
+
+  <node name="phd_filter" pkg="phd_filter" type="phd_filter_$(arg sensor_type)_node"
+        output="screen" respawn="false" ns="$(arg target_prefix2)">
+		<remap from="map" to="/map" />
+		<remap from="pose" to="gt_pose" />
+		<remap from="measurements" to="/cm_measurements" />
+		<remap from="target_array" to="/target_array" />
+
+		<param name="num_targets" value="30.0" />
+		<param name="max_value" value="0.005" />
+		<param name="width" value="40.0" />
+		<param name="height" value="30.0" />
+		<param name="grid_res" value="0.20" />
+
+		<param name="ospa_filename" value="/home/junchen/catkin_ws/src/phd-filter-range-bearing/phd_filter/OSPA_$(arg target_prefix2).txt" />
+
+		<rosparam file="$(arg sensor_config_file2)" ns="sensor" command="load" />
+		<rosparam file="$(arg motion_model_file2)" ns="motion/$(arg target_prefix2)" command="load" />
+	</node>
+
+<include file="$(find phd_filter)/launch/moving.launch" >
+	<arg name="moving_type" value="$(arg agent_prefix)0" />
+        <arg name="base_frame_id"   default="base" />
+        <arg name="global_frame_id" default="/map" />
+</include>
+
+<!--include file="$(find phd_filter)/launch/moving.launch" >
+	<arg name="moving_type" value="$(arg target_prefix2)0" />
+        <arg name="base_frame_id"   default="base" />
+        <arg name="global_frame_id" default="/map" />
+</include>
+
+<include file="$(find phd_filter)/launch/moving.launch" >
+	<arg name="moving_type" value="$(arg target_prefix2)1" />
+        <arg name="base_frame_id"   default="base" />
+        <arg name="global_frame_id" default="/map" />
+</include>
+
+<include file="$(find phd_filter)/launch/moving.launch" >
+	<arg name="moving_type" value="$(arg target_prefix2)2" />
+        <arg name="base_frame_id"   default="base" />
+        <arg name="global_frame_id" default="/map" />
+</include>
+
+<include file="$(find phd_filter)/launch/moving.launch" >
+	<arg name="moving_type" value="$(arg target_prefix2)3" />
+        <arg name="base_frame_id"   default="base" />
+        <arg name="global_frame_id" default="/map" />
+</include>
+
+<include file="$(find phd_filter)/launch/moving.launch" >
+	<arg name="moving_type" value="$(arg target_prefix2)4" />
+        <arg name="base_frame_id"   default="base" />
+        <arg name="global_frame_id" default="/map" />
+</include-->
+
+<!--include file="$(find phd_filter)/launch/moving.launch" >
+	<arg name="moving_type" value="$(arg target_prefix2)5" />
+        <arg name="base_frame_id"   default="base" />
+        <arg name="global_frame_id" default="/map" />
+</include>
+
+<include file="$(find phd_filter)/launch/moving.launch" >
+	<arg name="moving_type" value="$(arg target_prefix2)6" />
+        <arg name="base_frame_id"   default="base" />
+        <arg name="global_frame_id" default="/map" />
+</include>
+
+<include file="$(find phd_filter)/launch/moving.launch" >
+	<arg name="moving_type" value="$(arg target_prefix2)7" />
+        <arg name="base_frame_id"   default="base" />
+        <arg name="global_frame_id" default="/map" />
+</include>
+
+<include file="$(find phd_filter)/launch/moving.launch" >
+	<arg name="moving_type" value="$(arg target_prefix2)8" />
+        <arg name="base_frame_id"   default="base" />
+        <arg name="global_frame_id" default="/map" />
+</include>
+
+<include file="$(find phd_filter)/launch/moving.launch" >
+	<arg name="moving_type" value="$(arg target_prefix2)9" />
+        <arg name="base_frame_id"   default="base" />
+        <arg name="global_frame_id" default="/map" />
+</include-->
+
+</launch>

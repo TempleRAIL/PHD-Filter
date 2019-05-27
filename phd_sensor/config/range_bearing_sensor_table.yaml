@@ -40,10 +40,8 @@ det_prob:
   - {range: 4.75, prob: 0.9229}
   - {range: 5.00, prob: 0.9082}
 
-target_types: ['person', 'chair', 'table']
-confusion_matrix: [0.9, 0.05, 0.05, 0.1, 0.8, 0.1, 0.15, 0.15, 0.7]
-#confusion_matrix: [0.8, 0.15, 0.05, 0.2, 0.7, 0.1, 0.2, 0.25, 0.55]
-#confusion_matrix: [0.7, 0.15, 0.15, 0.15, 0.6, 0.25, 0.25, 0.25, 0.5]
+target_types: ['table']
+confusion_matrix: [1.0]
 #confusion_matrix: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
 
 map_service: "/static_map"

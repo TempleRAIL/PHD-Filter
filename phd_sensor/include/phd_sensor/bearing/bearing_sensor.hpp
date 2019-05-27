@@ -175,7 +175,15 @@ public:
 		g *= normalizer_ * exp(-(z0 - z1)*(z0 - z1) / (2.0 * p_.std_dev*p_.std_dev) );
 		
 		// Class component
-		g *= p_.confusion_matrix.at(x.type).at(z.type);
+		if (p_.confusion_matrix.count(x.type) > 0 && 
+		    p_.confusion_matrix.at(x.type).count(z.type) > 0)
+		{
+			g *= p_.confusion_matrix.at(x.type).at(z.type);
+		}
+		else
+		{
+			g *= 0.0;
+		}
 		
 		return g;
 	}
