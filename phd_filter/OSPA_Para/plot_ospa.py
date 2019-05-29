@@ -8,24 +8,23 @@ y1_ = []
 y2_ = []
 y3_ = []
 
-with open('OSPA_Para/OSPA_person3.txt','r') as person:
+with open('OSPA_person_cm3_average.txt','r') as person:
 	plots1 = csv.reader(person, delimiter=' ')
-	row1 = next(plots1)
 	for row in plots1:
-		x1_.append(float(row[0])-float(row1[0]))
-		y1_.append(float(row[2]))
+		x1_.append(float(row[0]))
+		y1_.append(float(row[1]))
 
-with open('OSPA_Para/OSPA_chair3.txt','r') as chair:
+with open('OSPA_chair_cm3_average.txt','r') as chair:
 	plots2 = csv.reader(chair, delimiter=' ')
 	for row in plots2:
-		x2_.append(float(row[0])-float(row1[0]))
-		y2_.append(float(row[2]))
+		x2_.append(float(row[0]))
+		y2_.append(float(row[1]))
 
-with open('OSPA_Para/OSPA_table3.txt','r') as table:
+with open('OSPA_table_cm3_average.txt','r') as table:
 	plots3 = csv.reader(table, delimiter=' ')
 	for row in plots3:
-		x3_.append(float(row[0])-float(row1[0]))
-		y3_.append(float(row[2]))		
+		x3_.append(float(row[0]))
+		y3_.append(float(row[1]))		
 
 plt.rcParams.update({'font.size': 18})
 plt.gca().set_color_cycle(['red', 'green', 'blue'])

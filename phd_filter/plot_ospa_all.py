@@ -7,7 +7,7 @@ y1 = []
 y2 = []
 y3 = []
 
-with open('OSPA/OSPA3.txt','r') as csvfile:
+with open('OSPA_cm1_average.txt','r') as csvfile:
     plots = csv.reader(csvfile, delimiter=' ')
     row1 = next(plots)
     for row in plots:

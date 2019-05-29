@@ -525,7 +525,7 @@ private:
 		m.type = visualization_msgs::Marker::POINTS;
 		m.action = visualization_msgs::Marker::ADD;
 		m.scale.x = m.scale.y = p_.grid_res;
-		const double THRESHOLD = 0.000003; //0.0005
+		const double THRESHOLD = 0.0005; //0.000003
 		for(int row = 0; row < rows; row++)
 			for(int col = 0 ; col < cols; col++)
 			{				
